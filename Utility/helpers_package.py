@@ -12,7 +12,9 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from subprocess import run, PIPE, call, DEVNULL
+from subprocess import run, CompletedProcess, PIPE, call, DEVNULL, TimeoutExpired
+import traceback
+from typing import Tuple
 from Utility.helpers_path import get_sys_path, get_sys_scripts_folder, get_full_filepath
 
 
@@ -37,15 +39,25 @@ def install_package(package: str) -> None:
              stderr=DEVNULL)
 
 
-def exec_package(package: str, args: str) -> bool:
+def exec_package(package: str, args: [str]) -> Tuple[bool, CompletedProcess]:
     """
     Executes the cli version of an installed python package
 
     :param package: Package name to execute
     :param args: Arguments to provide to the package
-    :return: Return code for failure or success
+    :return: Returns tuple of (boolean indicating success, the CompletedProcess object)
     """
-
-    cmd = get_full_filepath(get_sys_scripts_folder(), package)
-    result = run(cmd + " " + args, capture_output=True, text=True)
-    return (not str(result.stderr)) and (result.returncode == 0)
+    # TODO: log stderr to a different file for each decompiler
+    if package == "python3":
+        cmd = get_sys_path()
+    else:
+        cmd = get_full_filepath(get_sys_scripts_folder(), package)
+    try:
+        result = run([cmd, *args], capture_output=True, text=True, encoding="utf-8", timeout=3.0)
+    except TimeoutExpired as e:
+        return False, e
+    except Exception as f:
+        traceback.print_exc()
+        print(f"run was [{cmd}, {args}]")
+        return False, f
+    return (not str(result.stderr)) and (result.returncode == 0), result

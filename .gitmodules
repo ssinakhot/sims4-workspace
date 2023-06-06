@@ -1,0 +1,3 @@
+[submodule "unpyc37"]
+	path = unpyc37
+	url = https://github.com/andrew-tavera/unpyc37

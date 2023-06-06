@@ -33,7 +33,10 @@ projects_folder = os.path.expanduser(
 )
 
 # Location of the game folder
-game_folder = os.path.join('C:', os.sep, 'Program Files (x86)', 'Origin Games', 'The Sims 4')
+game_folder = os.path.join('C:', os.sep, 'Program Files', 'EA Games', 'The Sims 4')
+
+# The number of threads to use during decompilation
+num_decompilers = 10
 
 # ONLY FOR USERS OF PYCHARM PRO: Location of PyCharm Professional for debug setup
 # You do not need to use PyCharm at all or the professional version, ignore this setting if you are not
