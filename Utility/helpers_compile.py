@@ -122,5 +122,7 @@ def compile_src(creator_name: str, src_dir: str, build_dir: str, mods_dir: str, 
     # Copy it over to the mods folder
     shutil.copyfile(ts4script_full_build_path, ts4script_mod_path)
 
+    print("Made .ts4script in build/ and the mod folder")
+
     print("----------")
     print("Complete")

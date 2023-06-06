@@ -21,7 +21,7 @@ from Utility.helpers_path import ensure_path_created, remove_file, get_rel_path
 
 # Build paths and create temp directory
 folder_name = creator_name + "_" + project_name
-bundle_path = build_path + os.sep + folder_name + "-bundle.zip"
+bundle_path = build_path + os.sep + folder_name + ".zip"
 tmp_dir = tempfile.TemporaryDirectory()
 tmp_dst_path = tmp_dir.name + os.sep + folder_name
 
@@ -49,4 +49,4 @@ try:
 except:
     pass
 
-print("Created bundle at: " + "build" + os.sep + folder_name + "-bundle.zip")
+print("Created final mod zip at: " + "build" + os.sep + folder_name + ".zip")

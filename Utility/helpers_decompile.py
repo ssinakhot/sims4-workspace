@@ -146,6 +146,7 @@ def decompile_dir(src_dir: str, dest_dir: str, zip_name: str) -> None:
 
     to_decompile = []
 
+    # TODO: remove files from dest that have no corresponding src (e.g. source files deleted from the game)
     # Go through each compiled python file in the folder
     for root, dirs, files in os.walk(src_dir):
         for filename in fnmatch.filter(files, python_compiled_ext):
