@@ -13,24 +13,22 @@
 #    limitations under the License.
 
 # core imports
-import os
-import fnmatch
-import shutil
-import tempfile
-import traceback
-from multiprocessing import Pool
-from zipfile import PyZipFile
+import contextlib, fnmatch, os, shutil, tempfile, traceback
 from pathlib import Path
+from typing import Tuple
+from zipfile import PyZipFile
 
-from multiprocessing.sharedctypes import Value
 from ctypes import Structure, c_uint
+from multiprocessing import Pool
+from multiprocessing.sharedctypes import Value
+from subprocess import CompletedProcess
 
 # Helpers
-from Utility.helpers_path import replace_extension, get_rel_path, get_file_stem, ensure_path_created
-from Utility.helpers_package import install_package, exec_package
-from Utility.helpers_time import get_time, get_time_str, get_minutes
+from Utility.helpers_package import exec_package, install_package
+from Utility.helpers_path import ensure_path_created, get_file_stem, get_rel_path, replace_extension
+from Utility.helpers_time import get_minutes, get_time, get_time_str
 from Utility import process_module
-from settings import num_decompilers
+from settings import num_threads
 
 # Globals
 script_package_types = ['*.zip', '*.ts4script']
@@ -48,7 +46,9 @@ class TotalStats(Structure):
 # Global counts and timings for all the tasks
 totals = Value(TotalStats, 0, 0, 0, 0)
 # TODO: report infinite loop errors to https://github.com/greyblue9/unpyc37-3.10
-unpyc3_path = os.path.realpath(os.path.join(__file__, "..", "..", "unpyc37", "unpyc3.py"))
+unpyc3_path = os.path.join(Path(__file__).resolve().parent.parent, "unpyc37", "unpyc3.py")
+# Add it yourself by building https://github.com/zrax/pycdc
+pycdc_path = os.path.join(Path(__file__).resolve().parent.parent, "pycdc", "pycdc")
 
 
 def decompile_pre() -> None:
@@ -58,7 +58,6 @@ def decompile_pre() -> None:
 
     :return: Nothing
     """
-
     print("Checking for decompilers and installing if needed...")
     install_package("decompyle3")
     assert (os.path.isfile(unpyc3_path))
@@ -94,32 +93,75 @@ def print_summary(stats: Stats):
     print(f"T: {stats.count}, ", end="")
 
 
-def unpyc3_helper(cmd: str, args: [str], dest_path: str) -> bool:
+def stdout_decompile(cmd: str, args: [str], dest_path: str) -> Tuple[bool, CompletedProcess]:
+    """
+    A helper for decompilers that write to stdout instead of a file
+    :param cmd: the base command to run
+    :param args: the args to give the command
+    :param dest_path: the path that the code should be written to
+    :return: tuple of (True iff the command succeeded completely, the CompletedProcess object
+    """
     success, result = exec_package(cmd, args)
-    if success:
+    if len(result.stdout) > 0:
         try:
             with open(dest_path, "w", encoding="utf-8") as file:
                 file.write(result.stdout)
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
             print(f"command was {cmd}, {args}, {dest_path}")
             success = False
-    return success
+    return success, result
 
 
 def decompile_worker(dest_path: str, src_file: str):
-    # TODO: if none are completely successful, keep whichever decompilation resulted in the most lines of real code
-    success, _ = exec_package("decompyle3", ["-o", dest_path, src_file])
-    if not success:
-        success = unpyc3_helper("python3", [unpyc3_path, src_file], dest_path)
-    # TODO: also try https://github.com/zrax/pycdc
-    if not success:
-        success, _ = exec_package("uncompyle6", ["-o", dest_path, src_file])
+    dest_lines = [0, 0]
+    dest_files = [dest_path]
+    for _ in dest_lines[1:]:
+        handle, filename = tempfile.mkstemp("", os.path.basename(dest_path), dir=os.path.dirname(dest_path), text=True)
+        os.close(handle)
+        dest_files.append(filename)
+
+    which = 0
+
+    def file_to_write():
+        nonlocal which
+        which = min(range(len(dest_lines)), key=dest_lines.__getitem__)
+        return dest_files[which]
+
+    def update_line_count():
+        # TODO: more accurately count "real" lines of code (e.g. exclude byte code and infinitely repeating statements)
+        if os.path.isfile(dest_files[which]):
+            with open(dest_files[which], "rbU") as fi:
+                dest_lines[which] = sum(1 for _ in fi)
+
+    success: bool
+    try:
+        update_line_count()
+
+        success, _ = exec_package("decompyle3", ["-o", file_to_write(), src_file])
+        update_line_count()
+        if not success:
+            success, _ = stdout_decompile("python3", [unpyc3_path, src_file], file_to_write())
+            update_line_count()
+        if not success and os.path.isfile(pycdc_path):
+            success, _ = stdout_decompile(pycdc_path, [src_file], file_to_write())
+            update_line_count()
+        if not success:
+            success, _ = exec_package("uncompyle6", ["-o", file_to_write(), src_file])
+            update_line_count()
+
+        if not success:
+            which = max(range(len(dest_lines)), key=dest_lines.__getitem__)
+        if which != 0:
+            shutil.copyfile(dest_files[which], dest_files[0])
+    finally:
+        for file in dest_files[1:]:
+            os.remove(file)
     print_progress(process_module.stats, process_module.total_stats, success)
 
 
-# I don't fully understand why this is necessary, but thanks to https://stackoverflow.com/a/1721911
 def init_process(stats, total):
+    # I don't fully understand why this is necessary, but thanks to https://stackoverflow.com/a/1721911
     process_module.stats = stats
     process_module.total_stats = total
 
@@ -164,7 +206,7 @@ def decompile_dir(src_dir: str, dest_dir: str, zip_name: str) -> None:
 
             to_decompile.append((dest_path, src_file))
 
-    with Pool(num_decompilers, init_process, (task_stats, totals)) as pool:
+    with Pool(num_threads, init_process, (task_stats, totals)) as pool:
         pool.starmap(decompile_worker, to_decompile)
 
     time_end = get_time()
@@ -213,10 +255,8 @@ def decompile_zip(src_dir: str, zip_name: str, dst_dir: str) -> None:
 
     # There's a temporary directory bug that causes auto-cleanup to sometimes fail
     # We're preventing crash messages from flooding the screen to keep things tidy
-    try:
+    with contextlib.suppress(Exception):
         tmp_dir.cleanup()
-    except:
-        pass
 
 
 def decompile_zips(src_dir: str, dst_dir: str) -> None:
@@ -245,8 +285,7 @@ def decompile_print_totals() -> None:
         print(f"F: {totals.fail_count} [{round((totals.fail_count / totals.count) * 100, 2)}%], ", end="")
         print(f"T: {totals.count}, ", end="")
         print(get_time_str(totals.minutes))
-    except:
+    except Exception:
         print("No files were processed, an error has occurred. Is the path to the game folder correct?")
-        pass
 
     print("")

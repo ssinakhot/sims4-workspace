@@ -36,7 +36,10 @@ projects_folder = os.path.expanduser(
 game_folder = os.path.join('C:', os.sep, 'Program Files', 'EA Games', 'The Sims 4')
 
 # The number of threads to use during decompilation
-num_decompilers = 10
+num_threads = 10
+
+# The number of seconds each decompiler will have on each file before being deemed a failure
+decompiler_timeout = 180.0
 
 # ONLY FOR USERS OF PYCHARM PRO: Location of PyCharm Professional for debug setup
 # You do not need to use PyCharm at all or the professional version, ignore this setting if you are not

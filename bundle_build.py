@@ -11,13 +11,10 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-from zipfile import PyZipFile, ZIP_STORED
-
-import os
-import shutil
-import tempfile
+import contextlib, os, shutil, tempfile
 from settings import build_path, creator_name, project_name
-from Utility.helpers_path import ensure_path_created, remove_file, get_rel_path
+from Utility.helpers_path import ensure_path_created, get_rel_path, remove_file
+from zipfile import PyZipFile, ZIP_STORED
 
 # Build paths and create temp directory
 folder_name = creator_name + "_" + project_name
@@ -44,9 +41,7 @@ zf.close()
 
 # There's a temporary directory bug that causes auto-cleanup to sometimes fail
 # We're preventing crash messages from flooding the screen to keep things tidy
-try:
+with contextlib.suppress(Exception):
     tmp_dir.cleanup()
-except:
-    pass
 
 print("Created final mod zip at: " + "build" + os.sep + folder_name + ".zip")

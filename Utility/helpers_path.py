@@ -12,10 +12,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-import os
-import shutil
-import sys
-import glob
+import contextlib, glob, os, shutil, sys
 from pathlib import Path
 
 
@@ -23,8 +20,8 @@ def get_rel_path(path: str, common_base: str) -> str:
     """
     Returns path with common parent stripped out
 
-    :param path: Path to strip out common parent
-    :param common_base: Common parent
+    :param path: Path to strip
+    :param common_base: common parent to strip out
     :return: Path with common parent stripped out
     """
     return str(Path(path).relative_to(common_base))
@@ -68,7 +65,7 @@ def get_sys_folder() -> str:
 
     :return: Absolute path to Python folder
     """
-    return Path(get_sys_path()).parent
+    return str(Path(get_sys_path()).parent)
 
 
 def get_sys_scripts_folder() -> str:
@@ -97,7 +94,7 @@ def get_full_filepath(folder: str, base_name: str) -> str:
 def ensure_path_created(path: str) -> None:
     """
     Ensures folders are created and exist usually before doing work inside them
-    Thank you Blair Conrad & Boris
+    Thanks to Blair Conrad & Boris
     https://stackoverflow.com/questions/273192/how-can-i-safely-create-a-nested-directory
 
     :param path: The path to ensure exists
@@ -122,10 +119,8 @@ def remove_dir(path: str) -> None:
     #     sys.exit(1)
 
     # Remove folder and don't error out if it doesn't exist
-    try:
+    with contextlib.suppress(FileNotFoundError):
         shutil.rmtree(path, ignore_errors=True)
-    except:
-        pass
 
 
 def remove_file(path: str) -> None:
@@ -142,7 +137,5 @@ def remove_file(path: str) -> None:
     #     sys.exit(1)
 
     # Remove file and don't error out if it doesn't exist
-    try:
+    with contextlib.suppress(FileNotFoundError):
         os.remove(path)
-    except:
-        pass
