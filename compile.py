@@ -15,11 +15,11 @@
 # Helpers
 from Utility.helpers_compile import compile_src
 from settings import mods_folder, src_path, creator_name, build_path, project_name
+import traceback
 
 try:
     compile_src(creator_name, src_path, build_path, mods_folder, project_name)
     exec(open("sync_packages.py").read())
     exec(open("bundle_build.py").read())
-except:
-    print("An error occurred!")
-    pass
+except Exception as e:
+    traceback.print_exc()

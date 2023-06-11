@@ -14,7 +14,7 @@
 import contextlib, os, shutil, tempfile
 from settings import build_path, creator_name, project_name
 from Utility.helpers_path import ensure_path_created, get_rel_path, remove_file
-from zipfile import PyZipFile, ZIP_STORED
+from zipfile import ZipFile, ZIP_DEFLATED
 
 # Build paths and create temp directory
 folder_name = creator_name + "_" + project_name
@@ -32,10 +32,10 @@ remove_file(bundle_path)
 shutil.copytree(build_path, tmp_dst_path)
 
 # Zip up bundled folder
-zf = PyZipFile(bundle_path, mode='w', compression=ZIP_STORED, allowZip64=True, optimize=2)
-for root, dirs, files in os.walk(tmp_dir.name):
+zf = ZipFile(bundle_path, mode='w', compression=ZIP_DEFLATED, allowZip64=True, compresslevel=9)
+for root, dirs, files in os.walk(tmp_dst_path):
     for filename in files:
-        rel_path = get_rel_path(root + os.sep + filename, tmp_dir.name)
+        rel_path = get_rel_path(root + os.sep + filename, tmp_dst_path)
         zf.write(root + os.sep + filename, rel_path)
 zf.close()
 
@@ -44,4 +44,4 @@ zf.close()
 with contextlib.suppress(Exception):
     tmp_dir.cleanup()
 
-print("Created final mod zip at: " + "build" + os.sep + folder_name + ".zip")
+print(f"Created final mod zip at: {bundle_path}")
