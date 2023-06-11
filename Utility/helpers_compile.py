@@ -25,32 +25,19 @@ from Utility.helpers_symlink import symlink_remove_win, symlink_exists_win
 
 def compile_slim(src_dir: str, zf: PyZipFile) -> None:
     """
-    Compiles a slim mod (Contains only the pyc files)
-    Modified from andrew's code.
-    https://sims4studio.com/thread/15145/started-python-scripting
-
-    It is not reccomended to use this function because it's not reccomended to only have pyc files in your project
-    as it makes your project less flexible. Going forward this will nto be called by default.
+    Compiles all the .py to .pyc and writes them to the zip.
 
     :param src_dir: source folder
     :param zf: Zip File Handle
     :return: Nothing
     """
 
-    for folder, subs, files in os.walk(src_dir):
-        for filename in fnmatch.filter(files, '*.py'):
-            file_path_py = folder + os.sep + filename
-            file_path_pyc = replace_extension(file_path_py, "pyc")
-            rel_path_pyc = get_rel_path(file_path_pyc, src_dir)
-
-            py_compile.compile(file_path_py, file_path_pyc)
-            zf.write(file_path_pyc, rel_path_pyc)
-            remove_file(file_path_pyc)
+    zf.writepy(src_dir)
 
 
 def compile_full(src_dir: str, zf: PyZipFile) -> None:
     """
-    Compiles a full mod (Contains all files in source including python files which it then compiles
+    Compiles a full mod - contains all files in source including python files which it then compiles
     Modified from andrew's code.
     https://sims4studio.com/thread/15145/started-python-scripting
 
@@ -59,15 +46,8 @@ def compile_full(src_dir: str, zf: PyZipFile) -> None:
     :return: Nothing
     """
 
+    compile_slim(src_dir, zf)
     for folder, subs, files in os.walk(src_dir):
-        for filename in fnmatch.filter(files, '*.py'):
-            file_path_py = folder + os.sep + filename
-            file_path_pyc = replace_extension(file_path_py, "pyc")
-            rel_path_pyc = get_rel_path(file_path_pyc, src_dir)
-
-            py_compile.compile(file_path_py, file_path_pyc)
-            zf.write(file_path_pyc, rel_path_pyc)
-            remove_file(file_path_pyc)
         for filename in fnmatch.filter(files, '*[!p][!y][!c]'):
             rel_path = get_rel_path(folder + os.sep + filename, src_dir)
             zf.write(folder + os.sep + filename, rel_path)
@@ -75,9 +55,8 @@ def compile_full(src_dir: str, zf: PyZipFile) -> None:
 
 def compile_src(creator_name: str, src_dir: str, build_dir: str, mods_dir: str, mod_name: str = "Untitled") -> None:
     """
-    Packages your mod into a proper mod file. It creates 2 mod files, a full mod file which contains all the files
-    in the source folder unchanged along with the compiled python versions next to uncompiled ones and a slim mod-file
-    which contains only the compiled versions.
+    Packages your mod into a proper mod file. It creates only a full mod file which contains all the files
+    in the source folder unchanged along with the compiled python versions next to uncompiled ones.
 
     Modified from andrew's code.
     https://sims4studio.com/thread/15145/started-python-scripting

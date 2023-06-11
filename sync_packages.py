@@ -43,9 +43,9 @@ def remove_tl_packages(path: str) -> int:
 def copy_tl_packages(src: str, dest: str) -> int:
     count = 0
 
-    # Copy new package files
+    # Copy new assets
     for root, dirs, files in os.walk(src):
-        for filename in fnmatch.filter(files, "*.package"):
+        for filename in files:
             try:
                 shutil.copy(root + os.sep + filename,
                             dest + os.sep + filename)
