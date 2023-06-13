@@ -83,29 +83,29 @@ def symlink_exists_win(creator_name: str, mods_dir: str, mod_name: str = "Untitl
     return os.path.exists(scripts_path)
 
 
-def symlink_remove_win(creator_name: str, mods_dir: str, mod_name: str = "Untitled") -> None:
+def symlink_remove_win(creator_name: str, mods_dir: str, mod_name: str = "Untitled", remove_whole_dir=False) -> None:
     """
-    Safely removes the Mod Name Folder
-    /Mods/ModName/
+    Safely removes /Mods/ModName/Scripts
 
     This is very critical! In order to use symlinks on Windows without requiring admin privs we have to use
     "Directory Junctions", it's a special type of symlink intended for different purposes but works for our case.
-    However Python doesn't support Directory Junctions, in fact it can't tell the difference between a directory
-    junction and a real folder, it thinks they're the same.
+    However, Python doesn't support Directory Junctions; in fact, it can't tell the difference between a directory
+    junction and a real folder - it thinks they're the same.
 
     This means if you don't safely remove the Scripts directory junction, the original source code files the dev is
     working on will be wiped out irrecoverably when doing a re-compile or a re-devmode-setup. In other words, the dev
     will forever lose all the files they were working on as part of their project unless they had a backup elsewhere.
     Their hard work vanishes before their eyes just like that.
 
-    This is unnacceptable, to have a safety process in check, this function removes the mod folder, safely removing
-    the scripts folder beforehand. If it's unable to it creates a crash so as to not proceed.
+    This is unacceptable, to have a safety process in check, this function removes the mod folder, safely removing
+    the scripts folder beforehand. If it's unable to it creates a crash so the caller won't proceed.
 
     Always use this function to remove the Mod Name Folder
 
     :param creator_name: Creator Name
     :param mods_dir: Path to the Mods Folder
     :param mod_name: Name of Mod
+    :param remove_whole_dir: whether to really remove the whole Mod Name folder vs just the symlink inside it
     :return: Nothing
     """
 
@@ -129,8 +129,9 @@ def symlink_remove_win(creator_name: str, mods_dir: str, mod_name: str = "Untitl
         print("")
         raise
 
-    # Otherwise remove the directory
-    remove_dir(mod_folder_path)
+    if remove_whole_dir:
+        # Otherwise remove the directory
+        remove_dir(mod_folder_path)
 
 
 def symlink_create_win(creator_name: str, src_dir: str, mods_dir: str, mod_name: str = "Untitled") -> None:
@@ -147,23 +148,19 @@ def symlink_create_win(creator_name: str, src_dir: str, mods_dir: str, mod_name:
 
     # Build paths
     scripts_path = get_scripts_path(creator_name, mods_dir, mod_name)
-    mod_folder_path = str(Path(scripts_path).parent)
 
-    # Safely remove folder with symlink
+    # Safely remove the symlink
     symlink_remove_win(creator_name, mods_dir, mod_name)
-
-    # Re-create folder
-    ensure_path_created(mod_folder_path)
 
     # Create Scripts Folder as a Directory Junction
     exec_cmd("mklink",
              '/J ' +
              '"' + scripts_path + '" '
-             '"' + src_dir + '"')
+                                  '"' + src_dir + '"')
 
     print("")
     print("Dev Mode is activated, you no longer have to compile after each change, run devmode.reload [path.of.module]")
     print("to reload individual files while the game is running. To exit dev mode, simply run 'compile.py' which will")
     print("return things to normal.")
-    print("It's recomended to test a compiled version before final release after working in Dev Mode")
+    print("It's recommended to test a compiled version before final release after working in Dev Mode")
     print("")

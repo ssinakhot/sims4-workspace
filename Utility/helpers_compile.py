@@ -79,9 +79,13 @@ def compile_src(creator_name: str, src_dir: str, build_dir: str, mods_dir: str, 
 
     print("Clearing out old builds...")
 
-    # Delete and re-create build and sub-folder in Mods
+    # Delete Mods/sub-folder/Scripts and devmode.ts4script and re-create build
     is_devmode = symlink_exists_win("", mods_dir, mod_name)
     symlink_remove_win("", mods_dir, mod_name)
+
+    for root, dirs, files in os.walk(mods_sub_dir):
+        for filename in fnmatch.filter(files, "*.ts4script"):
+            remove_file(root + os.sep + filename)
 
     if is_devmode:
         print("Exiting Dev Mode...")
