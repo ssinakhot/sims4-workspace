@@ -1,4 +1,4 @@
-This is my update of a Sims 4 Script mod template project.
+This is my update of https://github.com/junebug12851/Sims4ScriptingBPProj, a Sims 4 Script mod template project.
 The first major change is that decompilation of the game source is parallelized, and uses multiple decompilers for
 improved success chances.
 
