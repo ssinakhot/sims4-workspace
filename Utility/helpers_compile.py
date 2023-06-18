@@ -17,7 +17,7 @@ import fnmatch
 import os
 import shutil
 import py_compile
-from zipfile import PyZipFile, ZIP_STORED
+from zipfile import PyZipFile, ZIP_DEFLATED
 
 from Utility.helpers_path import remove_file, ensure_path_created, get_rel_path, replace_extension, remove_dir
 from Utility.helpers_symlink import symlink_remove_win, symlink_exists_win
@@ -98,7 +98,7 @@ def compile_src(creator_name: str, src_dir: str, build_dir: str, mods_dir: str, 
     print("Re-building mod...")
 
     # Compile the mod
-    zf = PyZipFile(ts4script_full_build_path, mode='w', compression=ZIP_STORED, allowZip64=True, optimize=2)
+    zf = PyZipFile(ts4script_full_build_path, mode='w', compression=ZIP_DEFLATED, allowZip64=True, optimize=2)
     compile_full(src_dir, zf)
     zf.close()
 
