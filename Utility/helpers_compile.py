@@ -13,14 +13,12 @@
 #    limitations under the License.
 
 # import core packages
-import fnmatch
-import os
-import shutil
-import py_compile
+import fnmatch, logging, os, shutil
 from zipfile import PyZipFile, ZIP_DEFLATED
 
-from Utility.helpers_path import remove_file, ensure_path_created, get_rel_path, replace_extension, remove_dir
-from Utility.helpers_symlink import symlink_remove_win, symlink_exists_win
+from settings import devmode_parity
+from Utility.helpers_path import ensure_path_created, get_rel_path, remove_dir, remove_file
+from Utility.helpers_symlink import symlink_exists_win, symlink_remove_win
 
 
 def compile_slim(src_dir: str, zf: PyZipFile) -> None:
@@ -32,7 +30,35 @@ def compile_slim(src_dir: str, zf: PyZipFile) -> None:
     :return: Nothing
     """
 
-    zf.writepy(src_dir)
+    if devmode_parity:
+        zf.writepy(src_dir)
+        if not os.path.exists(os.path.join(src_dir, "__init__.py")):
+            for entry in os.scandir(src_dir):
+                if not entry.is_dir() or entry.name == "__pycache__":
+                    continue
+                zf.writepy(entry.path)
+                if not os.path.exists(os.path.join(entry.path, "__init__.py")):
+                    relative_entry = get_rel_path(entry.path, os.path.dirname(src_dir))
+                    logging.warning(
+                        f"Since '{relative_entry}' does not contain an '__init__.py', its contents will be written to "
+                        f"the base of the zip (i.e. with the folder removed), and any files in its sub-directories "
+                        f"will not be written! This is the only way to maintain parity with devmode."
+                    )
+                else:
+                    for sub_entry in os.scandir(entry.path):
+                        if not sub_entry.is_dir() or sub_entry.name == "__pycache__":
+                            continue
+                        if not os.path.exists(os.path.join(sub_entry.path, "__init__.py")):
+                            relative_entry = get_rel_path(sub_entry.path, os.path.dirname(src_dir))
+                            logging.warning(
+                                f"Since '{relative_entry}' does not contain an '__init__.py', "
+                                f"its contents will not be compiled!"
+                            )
+    else:
+        logging.warning("Since devmode_parity is off, code may not behave the same way as in devmode! Please test!")
+        for folder, subs, files in os.walk(src_dir):
+            for filename in fnmatch.filter(files, '*[!p][!y][!c]'):
+                zf.writepy(folder + os.sep + filename, basename=get_rel_path(folder, src_dir))
 
 
 def compile_full(src_dir: str, zf: PyZipFile) -> None:

@@ -41,6 +41,9 @@ num_threads = 10
 # The number of seconds each decompiler will have on each file before being deemed a failure
 decompiler_timeout = 180.0
 
+# Instead of compiling everything, should project structure be observed to make sure the code will work the same way as in devmode?
+devmode_parity = True
+
 # ONLY FOR USERS OF PYCHARM PRO: Location of PyCharm Professional for debug setup
 # You do not need to use PyCharm at all or the professional version, ignore this setting if you are not
 pycharm_pro_folder = os.path.join('C:', os.sep, 'Program Files', 'JetBrains', 'PyCharm 2020.2.2')
