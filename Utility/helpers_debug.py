@@ -16,7 +16,8 @@ from pathlib import Path
 from zipfile import PyZipFile, ZipFile, ZIP_STORED
 
 from Utility.helpers_path import ensure_path_created, get_sys_folder, get_rel_path, remove_dir, remove_file
-from Utility.helpers_package import install_package
+from Utility.helpers_venv import Venv
+
 
 # Thank you to Sigma1202 from https://www.youtube.com/watch?v=RBnS8m0174U
 # for coming up with this process
@@ -43,8 +44,11 @@ def debug_ensure_pycharm_debug_package_installed() -> None:
     :return: Nothing
     """
 
+    d = os.path.dirname(os.path.realpath(__file__))
+    venv = Venv(os.path.join(d, "virtual_env"))
+    venv.run()
     print("Making sure you have the debugging package installed...")
-    install_package("pydevd-pycharm~=202.7319.64")
+    venv.install("pydevd-pycharm~=202.7319.64")
 
 
 def install_debug_mod(mod_src: str, mods_dir: str, mod_name: str, mod_folder_name: str) -> None:

@@ -2,6 +2,8 @@ This is my update of https://github.com/junebug12851/Sims4ScriptingBPProj, a Sim
 The first major change is that decompilation of the game source is parallelized, and uses multiple decompilers for
 improved success chances.
 
+The second major change is the addition of type_hints.py, which generates python type stubs for the decompiled source files!
+
 ## Original README
 # Sims 4 Scripting Boilerplate Project
 

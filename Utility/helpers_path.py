@@ -50,6 +50,15 @@ def replace_extension(file: str, new_ext: str) -> str:
     return str(p.parent) + os.path.sep + p.stem + "." + new_ext
 
 
+def get_default_executable_extension() -> str:
+    """
+    Returns the default executable extension for the OS (might need some work)
+
+    :return: the default executable extension for the OS
+    """
+    return Path(sys.executable).suffix
+
+
 def get_sys_path() -> str:
     """
     Returns absolute path to python executable
@@ -74,7 +83,11 @@ def get_sys_scripts_folder() -> str:
 
     :return: Absolute path to Python scripts folder
     """
-    return os.path.join(get_sys_folder(), 'Scripts')
+    path = get_sys_folder()
+    if path.endswith('Scripts'):
+        return path
+    else:
+        os.path.join(get_sys_folder(), 'Scripts')
 
 
 def get_full_filepath(folder: str, base_name: str) -> str:
@@ -88,7 +101,11 @@ def get_full_filepath(folder: str, base_name: str) -> str:
     :param base_name: Name of file with unknown extension
     :return: Absolute path to file with extension
     """
-    return glob.glob(os.path.join(folder, base_name + '.*'))[0]
+    search = os.path.join(folder, base_name + '.*')
+    try:
+        return glob.glob(search)[0]
+    except IndexError:
+        raise FileNotFoundError(search)
 
 
 def ensure_path_created(path: str) -> None:

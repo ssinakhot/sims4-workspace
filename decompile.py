@@ -16,6 +16,7 @@
 import multiprocessing
 
 from Utility.helpers_decompile import decompile_pre, decompile_zips, decompile_print_totals
+
 from Utility.helpers_path import ensure_path_created
 from settings import gameplay_folder_data, gameplay_folder_game, projects_python_path
 

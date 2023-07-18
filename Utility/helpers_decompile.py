@@ -24,10 +24,12 @@ from multiprocessing.sharedctypes import Value
 from subprocess import CompletedProcess
 
 # Helpers
-from Utility.helpers_package import exec_package, install_package
-from Utility.helpers_path import ensure_path_created, get_file_stem, get_rel_path, replace_extension
+from Utility.helpers_exec import exec_cli
+from Utility.helpers_path import ensure_path_created, get_default_executable_extension, get_file_stem, get_rel_path,\
+    replace_extension
 from Utility.helpers_time import get_minutes, get_time, get_time_str
 from Utility import process_module
+from Utility.helpers_venv import Venv
 from settings import num_threads
 
 # Globals
@@ -48,7 +50,7 @@ totals = Value(TotalStats, 0, 0, 0, 0)
 # TODO: report infinite loop errors to https://github.com/greyblue9/unpyc37-3.10
 unpyc3_path = os.path.join(Path(__file__).resolve().parent.parent, "unpyc37", "unpyc3.py")
 # Add it yourself by building https://github.com/zrax/pycdc
-pycdc_path = os.path.join(Path(__file__).resolve().parent.parent, "pycdc", "pycdc")
+pycdc_path = os.path.join(Path(__file__).resolve().parent.parent, "pycdc", "pycdc") + get_default_executable_extension()
 
 
 def decompile_pre() -> None:
@@ -58,10 +60,15 @@ def decompile_pre() -> None:
 
     :return: Nothing
     """
+
+    d = os.path.dirname(os.path.realpath(__file__))
+    venv = Venv(os.path.join(d, "virtual_env"))
+    venv.run()
+
     print("Checking for decompilers and installing if needed...")
-    install_package("decompyle3")
+    venv.install("decompyle3")
     assert (os.path.isfile(unpyc3_path))
-    install_package("uncompyle6")
+    venv.install("uncompyle6")
 
 
 def print_progress(stats: Stats, total: TotalStats, success: bool):
@@ -101,7 +108,7 @@ def stdout_decompile(cmd: str, args: [str], dest_path: str) -> Tuple[bool, Compl
     :param dest_path: the path that the code should be written to
     :return: tuple of (True iff the command succeeded completely, the CompletedProcess object
     """
-    success, result = exec_package(cmd, args)
+    success, result = exec_cli(cmd, args)
     if len(result.stdout) > 0:
         try:
             with open(dest_path, "w", encoding="utf-8") as file:
@@ -113,7 +120,7 @@ def stdout_decompile(cmd: str, args: [str], dest_path: str) -> Tuple[bool, Compl
     return success, result
 
 
-def decompile_worker(dest_path: str, src_file: str):
+def decompile_worker(src_file: str, dest_path: str):
     dest_lines = [0, 0]
     dest_files = [dest_path]
     for _ in dest_lines[1:]:
@@ -138,7 +145,7 @@ def decompile_worker(dest_path: str, src_file: str):
     try:
         update_line_count()
 
-        success, _ = exec_package("decompyle3", ["-o", file_to_write(), src_file])
+        success, _ = exec_cli("decompyle3", ["-o", file_to_write(), src_file])
         update_line_count()
         if not success:
             success, _ = stdout_decompile("python3", [unpyc3_path, src_file], file_to_write())
@@ -147,7 +154,7 @@ def decompile_worker(dest_path: str, src_file: str):
             success, _ = stdout_decompile(pycdc_path, [src_file], file_to_write())
             update_line_count()
         if not success:
-            success, _ = exec_package("uncompyle6", ["-o", file_to_write(), src_file])
+            success, _ = exec_cli("uncompyle6", ["-o", file_to_write(), src_file])
             update_line_count()
 
         if not success:
@@ -181,6 +188,10 @@ def decompile_dir(src_dir: str, dest_dir: str, zip_name: str) -> None:
     # Begin clock
     time_start = get_time()
 
+    if not os.path.isfile(pycdc_path):
+        print(f"Add pycdc at {pycdc_path} for rarer decompiles!")
+        print("You can build it from https://github.com/zrax/pycdc")
+
     print("Decompiling " + zip_name)
 
     # Local counts for this one task
@@ -204,7 +215,7 @@ def decompile_dir(src_dir: str, dest_dir: str, zip_name: str) -> None:
             # Make sure to strip off the file name at the end
             ensure_path_created(str(Path(dest_path).parent))
 
-            to_decompile.append((dest_path, src_file))
+            to_decompile.append((src_file, dest_path))
 
     with Pool(num_threads, init_process, (task_stats, totals)) as pool:
         pool.starmap(decompile_worker, to_decompile)
