@@ -5,7 +5,7 @@ improved success chances, and keeps the best decompilation result, including any
 The second major change is the addition of type_hints.py, which generates run-time python type stubs for the
 decompiled source files! Uses mypy's stubgen for most files, but extracts and uses protoc for the protobufs.
 
-## Original README
+## A Copy of the Original's README follows:
 # Sims 4 Scripting Boilerplate Project
 
 This is a bolerplate project, sort of like a pre-made template and it represents one project so you can copy it for new 
