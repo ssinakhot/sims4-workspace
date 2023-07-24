@@ -20,7 +20,7 @@
 # Before running game make sure you select the debug profile and run debug in the editor beforehand
 # Run debug_teardown.py when done to uninstall the debug capability as it can slow down the game
 
-from Utility.helpers_debug import debug_ensure_pycharm_debug_package_installed, debug_install_mod, debug_install_egg, \
+from Utility.helpers_debug import debug_ensure_pycharm_debug_package_installed, install_debug_mod, debug_install_egg, \
     debug_teardown
 from settings import mods_folder, debug_eggs_path, debug_cmd_mod_src_path, debug_cmd_mod_name, debug_capability_name, \
     debug_mod_subfolder
@@ -32,7 +32,7 @@ debug_ensure_pycharm_debug_package_installed()
 # The mod creates a cheat "pycharm.debug" which activates the debug process
 # The egg injects the code into the game so that the debug process can happen
 debug_teardown(mods_folder, debug_mod_subfolder)
-debug_install_mod(debug_cmd_mod_src_path, mods_folder, debug_cmd_mod_name, debug_mod_subfolder)
+install_debug_mod(debug_cmd_mod_src_path, mods_folder, debug_cmd_mod_name, debug_mod_subfolder)
 debug_install_egg(debug_eggs_path, mods_folder, debug_capability_name, debug_mod_subfolder)
 
 print("")

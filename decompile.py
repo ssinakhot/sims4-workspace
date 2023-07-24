@@ -13,37 +13,30 @@
 #    limitations under the License.
 
 # Helpers
-import os
-import sys
+import multiprocessing
 
 from Utility.helpers_decompile import decompile_pre, decompile_zips, decompile_print_totals
-from Utility.helpers_path import ensure_path_created, remove_dir
-from settings import gameplay_folder_data, gameplay_folder_game, projects_python_path, decompiler_name
 
-if os.path.exists(projects_python_path):
-    print("This will wipe out the old decompilation at: " + projects_python_path)
-    answer = input("Are you sure you want to do this? [y/n]: ")
-    if answer is not "y":
-        sys.exit("Program aborted by user")
+from Utility.helpers_path import ensure_path_created
+from settings import gameplay_folder_data, gameplay_folder_game, projects_python_path
 
-print("Emptying prior decompilation...")
-remove_dir(projects_python_path)
+if __name__ == "__main__":
+    multiprocessing.freeze_support()
 
-# Make sure the python folder exists
-ensure_path_created(projects_python_path)
+    # Make sure the python folder exists
+    ensure_path_created(projects_python_path)
 
-# Do a pre-setup
-decompile_pre(decompiler_name)
+    # Do a pre-setup
+    decompile_pre()
 
-# Decompile all zips to the python projects folder
-print("")
-print("Beginning decompilation")
-print("THIS WILL SERIOUSLY TAKE A VERY LONG TIME!!! " +
-      "Additionally many files will not decompile properly which is normal.")
-print("")
+    # Decompile all zips to the python projects folder
+    print("")
+    print("Beginning decompilation")
+    print("This may take a while! Some files may not decompile properly which is normal.")
+    print("")
 
-decompile_zips(gameplay_folder_data, projects_python_path, decompiler_name)
-decompile_zips(gameplay_folder_game, projects_python_path, decompiler_name)
+    decompile_zips(gameplay_folder_data, projects_python_path)
+    decompile_zips(gameplay_folder_game, projects_python_path)
 
-# Print final statistics
-decompile_print_totals()
+    # Print final statistics
+    decompile_print_totals()

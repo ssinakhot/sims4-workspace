@@ -33,7 +33,7 @@ def remove_tl_packages(path: str) -> int:
     for root, dirs, files in os.walk(path):
         for filename in fnmatch.filter(files, "*.package"):
             remove_file(root + os.sep + filename)
-            count+=1
+            count += 1
 
         # Only cover the top-level folder
         break
@@ -43,14 +43,14 @@ def remove_tl_packages(path: str) -> int:
 def copy_tl_packages(src: str, dest: str) -> int:
     count = 0
 
-    # Copy new package files
+    # Copy new assets
     for root, dirs, files in os.walk(src):
-        for filename in fnmatch.filter(files, "*.package"):
+        for filename in files:
             try:
                 shutil.copy(root + os.sep + filename,
                             dest + os.sep + filename)
                 count += 1
-            except:
+            except Exception:
                 file_list_failed.append(root + os.sep + filename)
 
         # Only cover the top-level folder

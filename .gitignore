@@ -167,4 +167,5 @@ cython_debug/
 
 # Settings are specific to each computer, we only want the settings template
 # to be checked in
+Utility/virtual_env
 settings.py

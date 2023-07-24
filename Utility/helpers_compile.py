@@ -13,44 +13,57 @@
 #    limitations under the License.
 
 # import core packages
-import fnmatch
-import os
-import shutil
-import py_compile
-from zipfile import PyZipFile, ZIP_STORED
+import fnmatch, logging, os, shutil
+from zipfile import PyZipFile, ZIP_DEFLATED
 
-from Utility.helpers_path import remove_file, ensure_path_created, get_rel_path, replace_extension, remove_dir
-from Utility.helpers_symlink import symlink_remove_win, symlink_exists_win
+from settings import devmode_parity
+from Utility.helpers_path import ensure_path_created, get_rel_path, remove_dir, remove_file
+from Utility.helpers_symlink import symlink_exists_win, symlink_remove_win
 
 
 def compile_slim(src_dir: str, zf: PyZipFile) -> None:
     """
-    Compiles a slim mod (Contains only the pyc files)
-    Modified from andrew's code.
-    https://sims4studio.com/thread/15145/started-python-scripting
-
-    It is not reccomended to use this function because it's not reccomended to only have pyc files in your project
-    as it makes your project less flexible. Going forward this will nto be called by default.
+    Compiles all the .py to .pyc and writes them to the zip.
 
     :param src_dir: source folder
     :param zf: Zip File Handle
     :return: Nothing
     """
 
-    for folder, subs, files in os.walk(src_dir):
-        for filename in fnmatch.filter(files, '*.py'):
-            file_path_py = folder + os.sep + filename
-            file_path_pyc = replace_extension(file_path_py, "pyc")
-            rel_path_pyc = get_rel_path(file_path_pyc, src_dir)
-
-            py_compile.compile(file_path_py, file_path_pyc)
-            zf.write(file_path_pyc, rel_path_pyc)
-            remove_file(file_path_pyc)
+    if devmode_parity:
+        zf.writepy(src_dir)
+        if not os.path.exists(os.path.join(src_dir, "__init__.py")):
+            for entry in os.scandir(src_dir):
+                if not entry.is_dir() or entry.name == "__pycache__":
+                    continue
+                zf.writepy(entry.path)
+                if not os.path.exists(os.path.join(entry.path, "__init__.py")):
+                    relative_entry = get_rel_path(entry.path, os.path.dirname(src_dir))
+                    logging.warning(
+                        f"Since '{relative_entry}' does not contain an '__init__.py', its contents will be written to "
+                        f"the base of the zip (i.e. with the folder removed), and any files in its sub-directories "
+                        f"will not be written! This is the only way to maintain parity with devmode."
+                    )
+                else:
+                    for sub_entry in os.scandir(entry.path):
+                        if not sub_entry.is_dir() or sub_entry.name == "__pycache__":
+                            continue
+                        if not os.path.exists(os.path.join(sub_entry.path, "__init__.py")):
+                            relative_entry = get_rel_path(sub_entry.path, os.path.dirname(src_dir))
+                            logging.warning(
+                                f"Since '{relative_entry}' does not contain an '__init__.py', "
+                                f"its contents will not be compiled!"
+                            )
+    else:
+        logging.warning("Since devmode_parity is off, code may not behave the same way as in devmode! Please test!")
+        for folder, subs, files in os.walk(src_dir):
+            for filename in fnmatch.filter(files, '*[!p][!y][!c]'):
+                zf.writepy(folder + os.sep + filename, basename=get_rel_path(folder, src_dir))
 
 
 def compile_full(src_dir: str, zf: PyZipFile) -> None:
     """
-    Compiles a full mod (Contains all files in source including python files which it then compiles
+    Compiles a full mod - contains all files in source including python files which it then compiles
     Modified from andrew's code.
     https://sims4studio.com/thread/15145/started-python-scripting
 
@@ -59,15 +72,8 @@ def compile_full(src_dir: str, zf: PyZipFile) -> None:
     :return: Nothing
     """
 
+    compile_slim(src_dir, zf)
     for folder, subs, files in os.walk(src_dir):
-        for filename in fnmatch.filter(files, '*.py'):
-            file_path_py = folder + os.sep + filename
-            file_path_pyc = replace_extension(file_path_py, "pyc")
-            rel_path_pyc = get_rel_path(file_path_pyc, src_dir)
-
-            py_compile.compile(file_path_py, file_path_pyc)
-            zf.write(file_path_pyc, rel_path_pyc)
-            remove_file(file_path_pyc)
         for filename in fnmatch.filter(files, '*[!p][!y][!c]'):
             rel_path = get_rel_path(folder + os.sep + filename, src_dir)
             zf.write(folder + os.sep + filename, rel_path)
@@ -75,9 +81,8 @@ def compile_full(src_dir: str, zf: PyZipFile) -> None:
 
 def compile_src(creator_name: str, src_dir: str, build_dir: str, mods_dir: str, mod_name: str = "Untitled") -> None:
     """
-    Packages your mod into a proper mod file. It creates 2 mod files, a full mod file which contains all the files
-    in the source folder unchanged along with the compiled python versions next to uncompiled ones and a slim mod-file
-    which contains only the compiled versions.
+    Packages your mod into a proper mod file. It creates only a full mod file which contains all the files
+    in the source folder unchanged along with the compiled python versions next to uncompiled ones.
 
     Modified from andrew's code.
     https://sims4studio.com/thread/15145/started-python-scripting
@@ -100,9 +105,13 @@ def compile_src(creator_name: str, src_dir: str, build_dir: str, mods_dir: str, 
 
     print("Clearing out old builds...")
 
-    # Delete and re-create build and sub-folder in Mods
+    # Delete Mods/sub-folder/Scripts and devmode.ts4script and re-create build
     is_devmode = symlink_exists_win("", mods_dir, mod_name)
     symlink_remove_win("", mods_dir, mod_name)
+
+    for root, dirs, files in os.walk(mods_sub_dir):
+        for filename in fnmatch.filter(files, "*.ts4script"):
+            remove_file(root + os.sep + filename)
 
     if is_devmode:
         print("Exiting Dev Mode...")
@@ -115,12 +124,14 @@ def compile_src(creator_name: str, src_dir: str, build_dir: str, mods_dir: str, 
     print("Re-building mod...")
 
     # Compile the mod
-    zf = PyZipFile(ts4script_full_build_path, mode='w', compression=ZIP_STORED, allowZip64=True, optimize=2)
+    zf = PyZipFile(ts4script_full_build_path, mode='w', compression=ZIP_DEFLATED, allowZip64=True, optimize=2)
     compile_full(src_dir, zf)
     zf.close()
 
     # Copy it over to the mods folder
     shutil.copyfile(ts4script_full_build_path, ts4script_mod_path)
+
+    print("Made .ts4script in build/ and the mod folder")
 
     print("----------")
     print("Complete")

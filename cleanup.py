@@ -21,7 +21,7 @@ print("Removing Debug Setup...")
 debug_teardown(mods_folder, debug_mod_subfolder)
 
 print("Removing Mod Folder in Mods...")
-symlink_remove_win(creator_name, mods_folder, project_name)
+symlink_remove_win(creator_name, mods_folder, project_name, True)
 
 print("Removing Build folder...")
 remove_dir(build_path)
