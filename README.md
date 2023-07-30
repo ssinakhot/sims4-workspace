@@ -95,11 +95,11 @@ adding files to the `src` folder.
 
 ## Credits
 
-Project: [Sims4ScriptingBPProj](https://github.com/junebug12851/Sims4ScriptingBPProj)
-Copyright (c) 2021 [junebug12851](https://github.com/junebug12851)
+Project [Sims4ScriptingBPProj](https://github.com/junebug12851/Sims4ScriptingBPProj)\
+Copyright (c) 2021 [junebug12851](https://github.com/junebug12851)\
 Licensed [Apache2](https://www.apache.org/licenses/LICENSE-2.0)
 
-Project: [Sims4ScriptingTemplate](https://github.com/mycroftjr/Sims4ScriptingTemplate)
-Copyright (c) 2023 [mycroftjr](https://github.com/mycroftjr)
+Project [Sims4ScriptingTemplate](https://github.com/mycroftjr/Sims4ScriptingTemplate)\
+Copyright (c) 2023 [mycroftjr](https://github.com/mycroftjr)\
 Licensed [Apache2](https://www.apache.org/licenses/LICENSE-2.0)
 
