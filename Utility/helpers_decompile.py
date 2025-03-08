@@ -256,10 +256,10 @@ def decompile_zip(src_dir: str, zip_name: str, dst_dir: str) -> None:
     """
 
     # Create paths and directories
-    file_stem = get_file_stem(zip_name)
+    #file_stem = get_file_stem(zip_name)
 
     src_zip = os.path.join(src_dir, zip_name)
-    dst_dir = os.path.join(dst_dir, file_stem)
+    #dst_dir = os.path.join(dst_dir, file_stem)
 
     tmp_dir = tempfile.TemporaryDirectory()
     tmp_zip = os.path.join(tmp_dir.name, zip_name)
