@@ -47,7 +47,7 @@ class TotalStats(Structure):
 
 # Global counts and timings for all the tasks
 totals = Value(TotalStats, 0, 0, 0, 0)
-# TODO: report infinite loop errors to https://github.com/greyblue9/unpyc37-3.10
+# TODO: use https://github.com/greyblue9/unpyc37-3.10 instead if it returns to supporting Python 3.7
 unpyc3_path = os.path.join(Path(__file__).resolve().parent.parent, "unpyc37", "unpyc3.py")
 # Add it yourself by building https://github.com/zrax/pycdc
 pycdc_path = os.path.join(Path(__file__).resolve().parent.parent, "pycdc", "pycdc") + get_default_executable_extension()
@@ -133,31 +133,41 @@ def decompile_worker(src_file: str, dest_path: str):
     def file_to_write():
         nonlocal which
         which = min(range(len(dest_lines)), key=dest_lines.__getitem__)
-        return dest_files[which]
+        # Fix decompyle3 erroring when the output file doesn't already exist, for some reason
+        dest = dest_files[which]
+        Path(dest).touch()
+        return dest
+
+    success: bool
+    result = None
+    _all_errors = ""
 
     def update_line_count():
+        nonlocal _all_errors
         # TODO: more accurately count "real" lines of code (e.g. exclude byte code and infinitely repeating statements)
         if os.path.isfile(dest_files[which]):
             with open(dest_files[which], "rbU") as fi:
                 dest_lines[which] = sum(1 for _ in fi)
+        if result and not success:
+            _all_errors += result.stderr + "\n";
 
-    success: bool
     try:
         update_line_count()
 
-        success, _ = exec_cli("decompyle3", ["-o", file_to_write(), src_file])
+        success, result = stdout_decompile("python3", [unpyc3_path, src_file], file_to_write())
         update_line_count()
         if not success:
-            success, _ = stdout_decompile("python3", [unpyc3_path, src_file], file_to_write())
+            success, result = exec_cli("decompyle3", ["--verify", "syntax", "-o", file_to_write(), src_file])
             update_line_count()
         if not success and os.path.isfile(pycdc_path):
-            success, _ = stdout_decompile(pycdc_path, [src_file], file_to_write())
+            success, result = stdout_decompile(pycdc_path, [src_file], file_to_write())
             update_line_count()
         if not success:
-            success, _ = exec_cli("uncompyle6", ["-o", file_to_write(), src_file])
+            success, result = exec_cli("uncompyle6", ["-o", file_to_write(), src_file])
             update_line_count()
 
         if not success:
+            print(_all_errors)
             which = max(range(len(dest_lines)), key=dest_lines.__getitem__)
         if which != 0:
             shutil.copyfile(dest_files[which], dest_files[0])

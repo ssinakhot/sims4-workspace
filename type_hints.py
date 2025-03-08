@@ -8,6 +8,5 @@ if __name__ == "__main__":
 
     type_hints_pre()
 
-    generate_type_hints(projects_python_path)
-
-    proto_type_hints(projects_python_path, os.path.join(projects_python_path, "proto"), mods_folder, "proto_finder")
+    if proto_type_hints(projects_python_path, os.path.join(projects_python_path, "proto"), mods_folder, "proto_finder"):
+        generate_type_hints(projects_python_path)
