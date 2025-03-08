@@ -169,3 +169,5 @@ cython_debug/
 # to be checked in
 Utility/virtual_env
 settings.py
+
+.DS_Store

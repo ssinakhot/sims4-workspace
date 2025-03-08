@@ -14,17 +14,21 @@
 
 # Helpers
 import multiprocessing
+import argparse
 
 from Utility.helpers_decompile import decompile_pre, decompile_zips, decompile_print_totals
-
 from Utility.helpers_path import ensure_path_created
 from settings import gameplay_folder_data, gameplay_folder_game, projects_python_path
+
+def another_function():
+    print("Another function is running!")
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
 
-    # Make sure the python folder exists
-    ensure_path_created(projects_python_path)
+    parser = argparse.ArgumentParser(description="Decompile script")
+    parser.add_argument('--decompile-folder', action='store_true', help="Decompile all files in the decompile folder")
+    args = parser.parse_args()
 
     # Do a pre-setup
     decompile_pre()
@@ -35,8 +39,15 @@ if __name__ == "__main__":
     print("This may take a while! Some files may not decompile properly which is normal.")
     print("")
 
-    decompile_zips(gameplay_folder_data, projects_python_path)
-    decompile_zips(gameplay_folder_game, projects_python_path)
+
+    if args.decompile_folder:
+        decompile_zips("./decompile/input", "./decompile/output")
+    else:
+        # Make sure the python folder exists
+        ensure_path_created(projects_python_path)
+
+        decompile_zips(gameplay_folder_data, projects_python_path)
+        decompile_zips(gameplay_folder_game, projects_python_path)
 
     # Print final statistics
     decompile_print_totals()

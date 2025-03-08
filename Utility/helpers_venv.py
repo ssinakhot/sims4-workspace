@@ -5,7 +5,10 @@ import os, subprocess, sys, venv
 class Venv:
     def __init__(self, virtual_dir):
         self.virtual_dir = virtual_dir
-        self.virtual_python = os.path.join(self.virtual_dir, "Scripts", "python.exe")
+        if os.name == 'nt':
+            self.virtual_python = os.path.join(self.virtual_dir, "Scripts", "python.exe")
+        else:
+            self.virtual_python = os.path.join(self.virtual_dir, "bin", "python")
 
     def install_virtual_env(self):
         if not os.path.exists(self.virtual_python):
