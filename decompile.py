@@ -17,7 +17,7 @@ import multiprocessing
 import argparse
 
 from Utility.helpers_decompile import decompile_pre, decompile_zips, decompile_print_totals
-from settings import gameplay_folder_data, gameplay_folder_game 
+from settings import gameplay_folder_data, gameplay_folder_game, projects_python_path
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
@@ -40,13 +40,12 @@ if __name__ == "__main__":
     print("This may take a while! Some files may not decompile properly which is normal.")
     print("")
 
-    decompile_output_folder = "./decompile/output"
 
     if args.folder:
-        decompile_zips("./decompile/input", decompile_output_folder)
+        decompile_zips("./decompile/input", projects_python_path)
     elif args.game:
-        decompile_zips(gameplay_folder_data, decompile_output_folder)
-        decompile_zips(gameplay_folder_game, decompile_output_folder)
+        decompile_zips(gameplay_folder_data, projects_python_path)
+        decompile_zips(gameplay_folder_game, projects_python_path)
 
     # Print final statistics
     decompile_print_totals()
