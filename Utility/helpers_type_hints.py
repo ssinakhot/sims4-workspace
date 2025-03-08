@@ -67,6 +67,7 @@ def find_protos(src_dir: str, dst_dir: str) -> bool:
 
     encoder_py = os.path.join(src_dir, "core", "google", "protobuf", "internal", "encoder.py")
     backup = encoder_py + '.backup'
+    success: bool = False
     try:
         if os.path.exists(backup):
             shutil.copyfile(backup, encoder_py)
@@ -75,7 +76,9 @@ def find_protos(src_dir: str, dst_dir: str) -> bool:
         # Replace all instances of " chr" in encoder.py with a bytes-returning version
         with open(encoder_py, 'r+') as file:
             encoder_py_contents = file.read()
-            file.write('import six\n' + encoder_py_contents.replace(' chr', ' six.int2byte'))
+            file.seek(0)
+            file.write('import six\r\n' + encoder_py_contents.replace(' chr', ' six.int2byte'))
+            file.truncate()
 
         import google.protobuf.internal.encoder
         import google.protobuf.internal.wire_format
@@ -204,10 +207,11 @@ def find_protos(src_dir: str, dst_dir: str) -> bool:
         open(os.path.join(dst_dir, 'protos.txt'), 'w').write(str(fds))
         open(os.path.join(dst_dir, 'protos.pb'), 'wb').write(serialized)
         print("Protobuf FileDescriptorSet generated!")
+        success = True
     finally:
         shutil.copyfile(backup, encoder_py)
         os.remove(backup)
-    return True
+    return success
 
 
 def make_proto_finder(dst_dir: str, mods_dir: str, mod_folder_name: str) -> None:
@@ -339,6 +343,7 @@ def proto_type_hints(src_dir: str, dst_dir: str, mods_dir: str, mod_folder_name:
             return False
         stubs = os.path.abspath(os.path.join(dst_dir, '..', 'stubs'))
         ensure_path_created(stubs)
+        did_anything: bool = False
         for root, dirs, files in os.walk(src_dir):
             base_pyi_path = os.path.join(stubs, get_rel_path(root, src_dir))
             any_pb2: bool = False
@@ -379,8 +384,10 @@ def proto_type_hints(src_dir: str, dst_dir: str, mods_dir: str, mod_folder_name:
 
             if all_pb2 and any_pb2:
                 open(os.path.join(base_pyi_path, '__init__.pyi'), 'w').close()
-        print("Stubs for all protobufs generated!")
-        return True
+            did_anything = True
+        if did_anything:
+            print("Stubs for all protobufs generated!")
+        return did_anything
 
 
 def type_hint_worker(src_file: str, dest_path: str):

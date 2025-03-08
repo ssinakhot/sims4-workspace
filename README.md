@@ -2,6 +2,25 @@
 
 One project to manage all your The Sims 4 mods. This will assist with decompiling the game's python scripts and compiling
 your mods for development and for release.
+
+## Cloning the Repository and Initial Setup
+
+To get started, clone the repository and initialize the submodule:
+
+```sh
+git clone https://github.com/yourusername/sims4-workspace.git
+cd sims4-workspace
+git submodule update --init --recursive
+```
+
+## Updating the Submodule
+
+To update the submodule to the latest version, use the following commands:
+
+```sh
+cd sims4-workspace
+git submodule update --remote
+```
  
 ## Scripts
 
@@ -86,7 +105,7 @@ prettier way with less coding. Optional to use.
 
 1. Download it to your computer wherever you like, this will be your project folder for one project.
 2. Rename the folder to the name of your project.
-3. Copy settings.py.orig to another file called settings.py, this will become your personal settings.
+3. Copy `settings.py.example` to another file called `settings.py`, this will become your personal settings.
 3. Update the settings to match your needs.
 4. If you don't already have the library decompiled, run `decompile.py`.
 5. Using your favorite editor whether it be `Sublime`, `Notepad++`, `Visual Studio Code`, `PyCharm`, or wherever begin
