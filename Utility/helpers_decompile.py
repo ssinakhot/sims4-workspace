@@ -15,7 +15,7 @@
 # core imports
 import contextlib, fnmatch, os, shutil, tempfile, traceback
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, List
 from zipfile import PyZipFile
 
 from ctypes import Structure, c_uint
@@ -70,6 +70,10 @@ def decompile_pre() -> None:
     assert (os.path.isfile(unpyc3_path))
     venv.install("uncompyle6")
 
+    if not os.path.isfile(pycdc_path):
+        print(f"Add pycdc at {pycdc_path} for rarer decompiles!")
+        print("You can build it from https://github.com/zrax/pycdc")
+
 
 def print_progress(stats: Stats, total: TotalStats, success: bool):
     # Print progress
@@ -100,7 +104,7 @@ def print_summary(stats: Stats):
     print(f"T: {stats.count}, ", end="")
 
 
-def stdout_decompile(cmd: str, args: [str], dest_path: str) -> Tuple[bool, CompletedProcess]:
+def stdout_decompile(cmd: str, args: List[str], dest_path: str) -> Tuple[bool, CompletedProcess]:
     """
     A helper for decompilers that write to stdout instead of a file
     :param cmd: the base command to run
@@ -140,7 +144,7 @@ def decompile_worker(src_file: str, dest_path: str):
 
     success: bool
     result = None
-    _all_errors = ""
+    _all_errors = "\n"
 
     def update_line_count():
         nonlocal _all_errors
@@ -149,13 +153,15 @@ def decompile_worker(src_file: str, dest_path: str):
             with open(dest_files[which], "rbU") as fi:
                 dest_lines[which] = sum(1 for _ in fi)
         if result and not success:
-            _all_errors += result.stderr + "\n";
+            if result.stderr:
+                _all_errors += result.stderr + "\n"
+            else:
+                _all_errors += str(result) + "\n"
 
     try:
-        update_line_count()
-
         success, result = stdout_decompile("python3", [unpyc3_path, src_file], file_to_write())
         update_line_count()
+        
         if not success:
             success, result = exec_cli("decompyle3", ["--verify", "syntax", "-o", file_to_write(), src_file])
             update_line_count()
@@ -198,10 +204,6 @@ def decompile_dir(src_dir: str, dest_dir: str, zip_name: str) -> None:
     # Begin clock
     time_start = get_time()
 
-    if not os.path.isfile(pycdc_path):
-        print(f"Add pycdc at {pycdc_path} for rarer decompiles!")
-        print("You can build it from https://github.com/zrax/pycdc")
-
     print("Decompiling " + zip_name)
 
     # Local counts for this one task
@@ -213,7 +215,6 @@ def decompile_dir(src_dir: str, dest_dir: str, zip_name: str) -> None:
     # Go through each compiled python file in the folder
     for root, dirs, files in os.walk(src_dir):
         for filename in fnmatch.filter(files, python_compiled_ext):
-
             # Get details about the source file
             src_file = str(os.path.join(root, filename))
             src_file_rel_path = get_rel_path(src_file, src_dir)
@@ -256,10 +257,10 @@ def decompile_zip(src_dir: str, zip_name: str, dst_dir: str) -> None:
     """
 
     # Create paths and directories
-    #file_stem = get_file_stem(zip_name)
+    file_stem = get_file_stem(zip_name)
 
     src_zip = os.path.join(src_dir, zip_name)
-    #dst_dir = os.path.join(dst_dir, file_stem)
+    dst_dir = os.path.join(dst_dir, file_stem)
 
     tmp_dir = tempfile.TemporaryDirectory()
     tmp_zip = os.path.join(tmp_dir.name, zip_name)
@@ -290,6 +291,7 @@ def decompile_zips(src_dir: str, dst_dir: str) -> None:
     :param dst_dir: Directory to send decompiled files to
     :return: Nothing
     """
+    print(f"Decompiling {src_dir} to {dst_dir}")
     for root, dirs, files in os.walk(src_dir):
         for ext_filter in script_package_types:
             for filename in fnmatch.filter(files, ext_filter):

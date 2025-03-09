@@ -84,10 +84,14 @@ def get_sys_scripts_folder() -> str:
     :return: Absolute path to Python scripts folder
     """
     path = get_sys_folder()
-    if path.endswith('Scripts'):
+    if os.name == 'nt':  # Windows
+        if not path.endswith('bin'):
+            return os.path.join(path, 'Scripts')
         return path
-    else:
-        os.path.join(get_sys_folder(), 'Scripts')
+    else:  # Unix-based systems
+        if not path.endswith('bin'):
+            path = os.path.join(path, 'bin')
+        return path
 
 
 def get_full_filepath(folder: str, base_name: str) -> str:
@@ -101,7 +105,10 @@ def get_full_filepath(folder: str, base_name: str) -> str:
     :param base_name: Name of file with unknown extension
     :return: Absolute path to file with extension
     """
-    search = os.path.join(folder, base_name + '.*')
+    if os.name == 'nt':  # Windows
+        search = os.path.join(folder, base_name + '.*')
+    else:  # Unix-based systems
+        search = os.path.join(folder, base_name)
     try:
         return glob.glob(search)[0]
     except IndexError:

@@ -28,7 +28,9 @@ mods_folder = os.path.expanduser(
 )
 
 # Location of the game folder
-game_folder = os.path.join('C:', os.sep, 'Program Files', 'EA Games', 'The Sims 4')
+WINDOWS_DEFAULT = os.path.join('C:', os.sep, 'Program Files', 'EA Games', 'The Sims 4')
+MAC_DEFAULT = os.path.join('/', 'Applications', 'EA\ Games', 'The\ Sims\ 4.app', 'Contents')
+game_folder = MAC_DEFAULT
 
 # The number of threads to use during decompilation
 num_threads = 10
@@ -93,5 +95,8 @@ debug_cmd_mod_src_path = os.path.join(Path(__file__).parent, debug_cmd_mod_src)
 
 # Sims 4 Data and Game Folders
 gameplay_folder_data = os.path.join(game_folder, 'Data', 'Simulation', 'Gameplay')
-gameplay_folder_game = os.path.join(game_folder, 'Game', 'Bin', 'Python')
+if os.name == 'nt':
+    gameplay_folder_game = os.path.join(game_folder, 'Game', 'Bin', 'Python')
+else:
+    gameplay_folder_game = os.path.join(game_folder, 'Python')
 debug_eggs_path = os.path.join(pycharm_pro_folder, "debug-eggs", "pydevd-pycharm.egg")
