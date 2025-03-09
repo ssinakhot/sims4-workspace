@@ -47,9 +47,7 @@ class TotalStats(Structure):
 
 # Global counts and timings for all the tasks
 totals = Value(TotalStats, 0, 0, 0, 0)
-# TODO: use https://github.com/greyblue9/unpyc37-3.10 instead if it returns to supporting Python 3.7
 unpyc3_path = os.path.join(Path(__file__).resolve().parent.parent, "unpyc37", "unpyc3.py")
-# Add it yourself by building https://github.com/zrax/pycdc
 pycdc_path = os.path.join(Path(__file__).resolve().parent.parent, "pycdc", "pycdc") + get_default_executable_extension()
 
 

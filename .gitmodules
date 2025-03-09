@@ -1,3 +1,7 @@
 [submodule "unpyc37"]
 	path = unpyc37
 	url = https://github.com/andrew-tavera/unpyc37
+[submodule "pycdc"]
+	path = pycdc
+	url = https://github.com/zrax/pycdc.git
+	ignore = all

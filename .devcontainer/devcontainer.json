@@ -3,6 +3,7 @@
 {
 	"name": "sims4-workspace",
 	"image": "mcr.microsoft.com/devcontainers/python:1-3.7-bullseye",
+	"postCreateCommand": "/workspaces/sims4-workspace/post-create.sh",
 	"customizations": {
 		"vscode": {
 			"settings": {
