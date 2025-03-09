@@ -8,7 +8,7 @@ your mods for development and for release.
 To get started, clone the repository and initialize the submodule:
 
 ```sh
-git clone https://github.com/yourusername/sims4-workspace.git
+git clone https://github.com/ssinakhot/sims4-workspace.git
 cd sims4-workspace
 git submodule update --init --recursive
 ```
@@ -22,6 +22,30 @@ cd sims4-workspace
 git submodule update --remote
 ```
  
+## Loading the Project from WSL
+
+To load the project from WSL using VSCode, follow these steps:
+
+1. Open your WSL terminal and navigate to your home directory or any directory where you want to clone the project:
+    ```sh
+    cd ~
+    ```
+
+2. Clone the repository from within WSL using the instructions above.
+
+3. Run the setup script to configure the environment:
+    ```sh
+    ./wsl-setup.sh
+    ```
+
+4. Open VSCode and use the Remote - WSL extension to open the project folder:
+    ```sh
+    code .
+    ```
+
+5. Once the project is open in VSCode, you can open it in the devcontainer by selecting the `Reopen in Container` option from the Command Palette (Ctrl+Shift+P).
+
+This will set up the development environment inside a container, allowing you to work on the project seamlessly.
 ## Scripts
 
 ### compile.py

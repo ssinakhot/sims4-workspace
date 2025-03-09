@@ -25,7 +25,12 @@
 		// ***********************************************
 		// ***********************************************
 		// Windows Mounts
-		"source=C:/Program Files/EA Games/The Sims 4,target=/workspaces/sims4-workspace/decompile/game/,type=bind",
+		//"source=C:/Program Files/EA Games/The Sims 4,target=/workspaces/sims4-workspace/decompile/game/,type=bind",
+		//"source=${env:USERPROFILE}/Documents/Electronic Arts/The Sims 4,target=/workspaces/sims4-workspace/Documents/Electronic Arts/The Sims 4,type=bind"
+		// ***********************************************
+		// ***********************************************
+		// Windows WSL Mounts 
+		"source=/mnt/c/Program Files/EA Games/The Sims 4,target=/workspaces/sims4-workspace/decompile/game/,type=bind",
 		"source=${env:USERPROFILE}/Documents/Electronic Arts/The Sims 4,target=/workspaces/sims4-workspace/Documents/Electronic Arts/The Sims 4,type=bind"
 	]
 }
