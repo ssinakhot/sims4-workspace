@@ -16,7 +16,16 @@
 	},
 	"features": {},
 	"mounts": [
-		"source=/Applications/EA Games/The Sims 4.app/Contents,target=/workspaces/sims4-workspace/decompile/game/,type=bind",
-		"source=${env:HOME}/Documents/Electronic Arts/The Sims 4,target=/workspaces/sims4-workspace/Documents/Electronic Arts/The Sims 4,type=bind"
+		// Uncomment one mount type for your use case
+		// ***********************************************
+		// ***********************************************
+		// MacOS mount; You need to add /Applications/EA Games to your VirtioFS - Check Docker Desktop settings
+		//"source=/Applications/EA Games/The Sims 4.app/Contents,target=/workspaces/sims4-workspace/decompile/game/,type=bind",
+		//"source=${env:HOME}/Documents/Electronic Arts/The Sims 4,target=/workspaces/sims4-workspace/Documents/Electronic Arts/The Sims 4,type=bind",
+		// ***********************************************
+		// ***********************************************
+		// Windows Mounts
+		"source=C:/Program Files/EA Games/The Sims 4,target=/workspaces/sims4-workspace/decompile/game/,type=bind",
+		"source=${env:USERPROFILE}/Documents/Electronic Arts/The Sims 4,target=/workspaces/sims4-workspace/Documents/Electronic Arts/The Sims 4,type=bind"
 	]
 }
