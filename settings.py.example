@@ -27,14 +27,14 @@ DOCUMENTS_DEFAULT = os.path.expanduser(
     os.path.join('~', 'Documents', 'Electronic Arts', 'The Sims 4', 'Mods')
 )
 DOCUMENTS_DEVCONTAINER_DEFAULT = os.path.join(
-    './', 'Documents', 'Electronic Arts', 'The Sims 4', 'Mods'
+    '.', 'Documents', 'Electronic Arts', 'The Sims 4', 'Mods'
 )
 mods_folder = DOCUMENTS_DEVCONTAINER_DEFAULT
 
 # Location of the game folder
 GAME_WINDOWS_DEFAULT = os.path.join('C:', os.sep, 'Program Files', 'EA Games', 'The Sims 4')
 GAME_MAC_DEFAULT = os.path.join('/', 'Applications', 'EA\ Games', 'The\ Sims\ 4.app', 'Contents')
-GAME_DEVCONTAINER_DEFAULT = os.path.join('./', 'decompile', 'game')
+GAME_DEVCONTAINER_DEFAULT = os.path.join('.', 'decompile', 'game')
 game_folder = GAME_DEVCONTAINER_DEFAULT
 
 # The number of threads to use during decompilation
