@@ -64,8 +64,8 @@ build_subpath = "build"
 assets_subpath = "assets"
 
 # Subpath inside the projects folder to place decompiled python files
-projects_python_subpath = "__util" + os.sep + "Python"
-projects_tuning_subpath = "__util" + os.sep + "Tuning"
+projects_python_subpath = "python"
+projects_tuning_subpath = "tuning"
 
 # The name of this project, by default it's setup to use the folder name containing the project
 project_name = Path(__file__).parent.stem
