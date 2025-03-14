@@ -152,11 +152,22 @@ def symlink_create_win(creator_name: str, src_dir: str, mods_dir: str, mod_name:
     # Safely remove the symlink
     symlink_remove_win(creator_name, mods_dir, mod_name)
 
-    # Create Scripts Folder as a Directory Junction
-    exec_cmd("mklink",
-             '/J ' +
-             '"' + scripts_path + '" '
-                                  '"' + src_dir + '"')
+    # Check the operating system and use appropriate symlink command
+    if os.name == 'nt':  # Windows
+        # Create Scripts Folder as a Directory Junction
+        exec_cmd("mklink",
+                '/J ' +
+                '"' + scripts_path + '" '
+                                    '"' + src_dir + '"')
+    else:  # Linux/macOS
+        # Ensure parent directory exists
+        mod_folder_path = str(Path(scripts_path).parent)
+        ensure_path_created(mod_folder_path)
+        
+        # Create a symbolic link
+        os.symlink(src_dir, scripts_path)
+        
+    print(f"Created symlink from {src_dir} to {scripts_path}")
 
     print("")
     print("Dev Mode is activated, you no longer have to compile after each change, run devmode.reload [path.of.module]")

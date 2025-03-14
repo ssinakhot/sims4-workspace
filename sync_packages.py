@@ -46,9 +46,11 @@ def copy_tl_packages(src: str, dest: str) -> int:
     # Copy new assets
     for root, dirs, files in os.walk(src):
         for filename in files:
+            if filename == ".gitkeep":
+                continue
             try:
                 shutil.copy(root + os.sep + filename,
-                            dest + os.sep + filename)
+                        dest + os.sep + filename)
                 count += 1
             except Exception:
                 file_list_failed.append(root + os.sep + filename)
