@@ -15,7 +15,7 @@
 from subprocess import run, CompletedProcess, TimeoutExpired
 import os.path, traceback
 from typing import Tuple, Union
-from Utility.helpers_path import get_sys_path, get_sys_scripts_folder, get_full_filepath
+from util.path import get_sys_path, get_sys_scripts_folder, get_full_filepath
 
 from settings import decompiler_timeout
 

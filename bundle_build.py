@@ -13,7 +13,7 @@
 #    limitations under the License.
 import contextlib, os, shutil, tempfile
 from settings import build_path, creator_name, project_name
-from Utility.helpers_path import ensure_path_created, get_rel_path, remove_file
+from util.path import ensure_path_created, get_rel_path, remove_file
 from zipfile import ZipFile, ZIP_DEFLATED
 
 # Build paths and create temp directory

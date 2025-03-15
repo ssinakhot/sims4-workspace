@@ -20,7 +20,7 @@
 # Before running game make sure you select the debug profile and run debug in the editor beforehand
 # Run debug_teardown.py when done to uninstall the debug capability as it can slow down the game
 
-from Utility.helpers_debug import debug_ensure_pycharm_debug_package_installed, install_debug_mod, debug_install_egg, \
+from util.debug import debug_ensure_pycharm_debug_package_installed, install_debug_mod, debug_install_egg, \
     debug_teardown
 from settings import mods_folder, debug_eggs_path, debug_cmd_mod_src_path, debug_cmd_mod_name, debug_capability_name, \
     debug_mod_subfolder

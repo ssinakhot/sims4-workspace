@@ -15,8 +15,8 @@ import contextlib, fnmatch, os, shutil, tempfile
 from pathlib import Path
 from zipfile import PyZipFile, ZipFile, ZIP_STORED
 
-from Utility.helpers_path import ensure_path_created, get_sys_folder, get_rel_path, remove_dir, remove_file
-from Utility.helpers_venv import Venv
+from util.path import ensure_path_created, get_sys_folder, get_rel_path, remove_dir, remove_file
+from util.venv import Venv
 
 
 # Thank you to Sigma1202 from https://www.youtube.com/watch?v=RBnS8m0174U

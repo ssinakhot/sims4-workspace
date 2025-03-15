@@ -18,11 +18,11 @@ from multiprocessing import Pool
 from pathlib import Path
 
 # Helpers
-from Utility.helpers_debug import install_debug_mod
-from Utility.helpers_exec import exec_cli
-from Utility.helpers_path import ensure_path_created, get_default_executable_extension, get_rel_path
-from Utility.helpers_venv import Venv
-from Utility.injector import inject, inject_to
+from util.debug import install_debug_mod
+from util.exec import exec_cli
+from util.path import ensure_path_created, get_default_executable_extension, get_rel_path
+from util.venv import Venv
+from util.injector import inject, inject_to
 from settings import num_threads
 
 protoc_path = os.path.join(

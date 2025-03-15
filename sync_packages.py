@@ -18,7 +18,7 @@ import fnmatch
 import os
 import shutil
 from settings import assets_path, mods_folder, creator_name, project_name, build_path
-from Utility.helpers_path import ensure_path_created, remove_file
+from util.path import ensure_path_created, remove_file
 
 mod_name_folder_path = mods_folder + os.sep + creator_name + "_" + project_name
 

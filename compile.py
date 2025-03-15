@@ -13,7 +13,7 @@
 #    limitations under the License.
 
 # Helpers
-from Utility.helpers_compile import compile_src
+from util.compile import compile_src
 from settings import mods_folder, src_path, creator_name, build_path, project_name
 import traceback
 

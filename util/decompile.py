@@ -24,12 +24,12 @@ from multiprocessing.sharedctypes import Value
 from subprocess import CompletedProcess
 
 # Helpers
-from Utility.helpers_exec import exec_cli
-from Utility.helpers_path import ensure_path_created, get_default_executable_extension, get_file_stem, get_rel_path,\
+from util.exec import exec_cli
+from util.path import ensure_path_created, get_default_executable_extension, get_file_stem, get_rel_path,\
     replace_extension
-from Utility.helpers_time import get_minutes, get_time, get_time_str
-from Utility import process_module
-from Utility.helpers_venv import Venv
+from util.time import get_minutes, get_time, get_time_str
+from util import process_module
+from util.venv import Venv
 from settings import num_threads
 
 # Globals

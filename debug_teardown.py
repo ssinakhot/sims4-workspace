@@ -12,7 +12,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-from Utility.helpers_debug import debug_teardown
+from util.debug import debug_teardown
 from settings import mods_folder, debug_mod_subfolder
 
 debug_teardown(mods_folder, debug_mod_subfolder)

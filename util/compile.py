@@ -17,8 +17,8 @@ import fnmatch, logging, os, shutil
 from zipfile import PyZipFile, ZIP_DEFLATED
 
 from settings import devmode_parity
-from Utility.helpers_path import ensure_path_created, get_rel_path, remove_dir, remove_file
-from Utility.helpers_symlink import symlink_exists_win, symlink_remove_win
+from util.path import ensure_path_created, get_rel_path, remove_dir, remove_file
+from util.watcher import watcher_folder_exists, watcher_folder_remove
 
 
 def compile_slim(src_dir: str, zf: PyZipFile) -> None:
@@ -106,8 +106,8 @@ def compile_src(creator_name: str, src_dir: str, build_dir: str, mods_dir: str, 
     print("Clearing out old builds...")
 
     # Delete Mods/sub-folder/Scripts and devmode.ts4script and re-create build
-    is_devmode = symlink_exists_win("", mods_dir, mod_name)
-    symlink_remove_win("", mods_dir, mod_name)
+    is_devmode = watcher_folder_exists("", mods_dir, mod_name)
+    watcher_folder_remove("", mods_dir, mod_name)
 
     for root, dirs, files in os.walk(mods_sub_dir):
         for filename in fnmatch.filter(files, "*.ts4script"):

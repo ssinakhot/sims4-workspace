@@ -16,7 +16,7 @@
 import multiprocessing
 import argparse
 
-from Utility.helpers_decompile import decompile_pre, decompile_zips, decompile_print_totals
+from util.decompile import decompile_pre, decompile_zips, decompile_print_totals
 from settings import gameplay_folder_data, gameplay_folder_game, projects_python_path
 
 if __name__ == "__main__":

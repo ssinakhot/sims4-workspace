@@ -11,20 +11,14 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-from Utility.helpers_debug import install_debug_mod, remove_debug_mods
-from Utility.helpers_symlink import symlink_create_win, symlink_exists_win
+from util.debug import install_debug_mod, remove_debug_mods
+from util.watcher import watcher_create 
 from settings import mods_folder, src_path, creator_name, project_name, devmode_cmd_mod_src_path, devmode_cmd_mod_name
-
-is_devmode = symlink_exists_win(creator_name, mods_folder, project_name)
-
-if is_devmode:
-    print("You're already in Dev Mode")
-    raise SystemExit(1)
 
 try:
     remove_debug_mods(mods_folder, creator_name + "_" + project_name)
     install_debug_mod(devmode_cmd_mod_src_path, mods_folder, devmode_cmd_mod_name, creator_name + "_" + project_name)
     exec(open("sync_packages.py").read())
-    symlink_create_win(creator_name, src_path, mods_folder, project_name)
+    watcher_create(creator_name, src_path, mods_folder, project_name)
 except Exception:
     print("An error occurred!")

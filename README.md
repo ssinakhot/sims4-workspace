@@ -119,12 +119,6 @@ When completed, all traces of anything built by the project template for your mo
 This is common when you just want to clean everything up, especially after your all done developing and want to
 essentially "Un-Build" and "Un-Make" everything.
 
-### src/helpers/injector.py
-
-This uses the popular injector, brought to my attention by LeRoiDesVampires and TURBOSPOOK. It's widely used in the Sims
-modding community across mods and tools. Reference it in your code to automate replacing functions in-game in a much
-prettier way with less coding. Optional to use.
-
 ## How to get started with this
 
 1. Download it to your computer wherever you like, this will be your project folder for one project.

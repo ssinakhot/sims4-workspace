@@ -1,6 +1,6 @@
 import multiprocessing, os
 
-from Utility.helpers_type_hints import generate_type_hints, proto_type_hints, type_hints_pre
+from util.venvtype_hints import generate_type_hints, proto_type_hints, type_hints_pre
 from settings import mods_folder, projects_python_path
 
 if __name__ == "__main__":
