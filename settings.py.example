@@ -71,13 +71,13 @@ projects_tuning_subpath = "tuning"
 project_name = Path(__file__).parent.stem
 
 # Dev Mode
-devmode_cmd_mod_src = "Utility/devmode_cmd.py"
+devmode_cmd_mod_src = "util/devmode_cmd.py"
 devmode_cmd_mod_name = "devmode-cmd"
 
 # The name of the mod which will start the Pycharm debugging when entered into the game
 # ONLY FOR PYCHARM PRO USERS: If you're not using PyCharm Pro don't worry about this setting
 debug_cmd_mod_name = "pycharm-debug-cmd"
-debug_cmd_mod_src = "Utility/debug_cmd.py"
+debug_cmd_mod_src = "util/debug_cmd.py"
 debug_capability_name = "pycharm-debug-capability"
 debug_mod_subfolder = "PyCharmPro_Debug"
 

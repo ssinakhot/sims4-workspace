@@ -124,7 +124,7 @@ def watcher_folder_remove(creator_name: str, mods_dir: str, mod_name: str = "Unt
 def watcher_create(creator_name: str, src_dir: str, mods_dir: str, mod_name: str = "Untitled") -> None:
     """
     Creates a live file watcher that copies files from source to the game's mod directory.
-    
+
     This function first removes any existing mod files, then sets up continuous monitoring
     of the source directory. When changes are detected, files are automatically copied
     to the destination, enabling real-time development without manual compilation.
@@ -147,7 +147,8 @@ def watcher_create(creator_name: str, src_dir: str, mods_dir: str, mod_name: str
     ensure_path_created(mod_folder_path)
 
     print("")
-    print("Dev Mode is activated, you no longer have to compile after each change, run devmode.reload [path.of.module]")
+    print(
+        "Dev Mode is activated, you no longer have to compile after each change, run devmode.reload [path.of.module]")
     print("to reload individual files while the game is running. To exit dev mode, simply run 'compile.py' which will")
     print("return things to normal.")
     print("It's recommended to test a compiled version before final release after working in Dev Mode")
@@ -155,7 +156,7 @@ def watcher_create(creator_name: str, src_dir: str, mods_dir: str, mod_name: str
 
     # First copy the files from source to destination
     shutil.copytree(src_dir, scripts_path)
-    
+
     # Define a function to periodically copy files
     def update_files():
         try:
@@ -164,14 +165,19 @@ def watcher_create(creator_name: str, src_dir: str, mods_dir: str, mod_name: str
                 # Get relative path
                 rel_path = os.path.relpath(root, src_dir)
                 # Create destination directory if it doesn't exist
-                dest_dir = os.path.join(scripts_path, rel_path) if rel_path != '.' else scripts_path
+                dest_dir = os.path.join(
+                    scripts_path, rel_path) if rel_path != '.' else scripts_path
                 os.makedirs(dest_dir, exist_ok=True)
-                
+
                 # Copy each file only if it's been modified
                 for file in files:
+                    # Skip *.py.*.tmp files
+                    if file.endswith('.tmp') and '.py.' in file:
+                        continue
+
                     src_file = os.path.join(root, file)
                     dest_file = os.path.join(dest_dir, file)
-                    
+
                     # Check if destination file exists and compare modification times
                     try:
                         if not os.path.exists(dest_file) or int(os.path.getmtime(src_file)) > int(os.path.getmtime(dest_file)):
@@ -180,18 +186,19 @@ def watcher_create(creator_name: str, src_dir: str, mods_dir: str, mod_name: str
                             print(f"[{now}] Updated file: {src_file}")
                     except (OSError, FileNotFoundError) as e:
                         # Handle file access errors
-                        print(f"Error checking file timestamps for {src_file}: {e}")
+                        print(
+                            f"Error checking file timestamps for {src_file}: {e}")
                         # Force copy if there was an error checking timestamps
                         shutil.copy2(src_file, dest_file)
                         now = time.strftime("%H:%M:%S")
                         change = True
-            
+
         except Exception as e:
             print(f"Error during update: {e}")
-    
+
     # Initial copy
     update_files()
-    
+
     # Start a background thread to continuously update the files
     def auto_update_thread():
         while True:
@@ -203,11 +210,11 @@ def watcher_create(creator_name: str, src_dir: str, mods_dir: str, mod_name: str
             except Exception as e:
                 print(f"Error in update thread: {e}")
                 time.sleep(5)  # Wait before retrying
-    
+
     # Create and start the thread
     update_thread = Thread(target=auto_update_thread, daemon=True)
     update_thread.start()
-    
+
     print("Auto-update thread started. Files will be copied whenever you update them.")
     print("Press Ctrl+C to stop the script when you're done.")
 
@@ -219,5 +226,3 @@ def watcher_create(creator_name: str, src_dir: str, mods_dir: str, mod_name: str
     except KeyboardInterrupt:
         watcher_folder_remove(creator_name, mods_dir, mod_name)
         print("\nStopping auto-update.")
-
-
