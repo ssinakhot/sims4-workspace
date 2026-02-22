@@ -30,20 +30,23 @@ def exec_cli(package: str, args: [str], **kwargs) -> Tuple[bool, Union[Completed
     """
     # TODO: log stderr to a different file for each decompiler
     if os.path.isfile(package):
-        cmd = package
+        cmd_list = [package, *args]
     elif package == "python3":
-        cmd = get_sys_path()
+        cmd_list = [get_sys_path(), *args]
     else:
-        cmd = get_full_filepath(get_sys_scripts_folder(), package)
+        cmd_list = [get_sys_path(), "-m", package, *args]
     try:
         # TODO: make timeout scale with input file size?
         kwargs.setdefault("capture_output", True)
         kwargs.setdefault("timeout", decompiler_timeout)
-        result = run([cmd, *args], text=True, encoding="utf-8", **kwargs)
+        result = run(cmd_list, text=True, encoding="utf-8", **kwargs)
     except TimeoutExpired as e:
         return False, e
     except Exception:
         traceback.print_exc()
-        print(f"run was [{cmd}, {args}]")
+        if len(cmd_list) > 2:
+            print(f"run was [{cmd_list[0]}, -m {args}]")
+        else:
+            print(f"run was [{cmd_list[0]}, {args}]")
         return False, None
-    return (not str(result.stderr)) and (result.returncode == 0), result
+    return (not result.stderr) and (result.returncode == 0), result

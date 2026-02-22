@@ -111,7 +111,7 @@ def stdout_decompile(cmd: str, args: List[str], dest_path: str) -> Tuple[bool, C
     :return: tuple of (True iff the command succeeded completely, the CompletedProcess object
     """
     success, result = exec_cli(cmd, args)
-    if len(result.stdout) > 0:
+    if result and result.stdout and len(result.stdout) > 0:
         try:
             with open(dest_path, "w", encoding="utf-8") as file:
                 file.write(result.stdout)
@@ -148,7 +148,7 @@ def decompile_worker(src_file: str, dest_path: str):
         nonlocal _all_errors
         # TODO: more accurately count "real" lines of code (e.g. exclude byte code and infinitely repeating statements)
         if os.path.isfile(dest_files[which]):
-            with open(dest_files[which], "rbU") as fi:
+            with open(dest_files[which], "rb") as fi:
                 dest_lines[which] = sum(1 for _ in fi)
         if result and not success:
             if result.stderr:
