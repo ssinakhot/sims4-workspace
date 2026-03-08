@@ -11,37 +11,14 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-import contextlib, os, shutil, tempfile
+
+from util.bundle_build import bundle_build
 from settings import build_path, creator_name, project_name
-from util.path import ensure_path_created, get_rel_path, remove_file
-from zipfile import ZipFile, ZIP_DEFLATED
 
-# Build paths and create temp directory
-folder_name = creator_name + "_" + project_name
-bundle_path = build_path + os.sep + folder_name + ".zip"
-tmp_dir = tempfile.TemporaryDirectory()
-tmp_dst_path = tmp_dir.name + os.sep + folder_name
 
-# Ensure build directory is created
-ensure_path_created(build_path)
+def main():
+    bundle_build(build_path, creator_name, project_name)
 
-# Remove existing bundle
-remove_file(bundle_path)
 
-# Copy build files to tmp dir
-shutil.copytree(build_path, tmp_dst_path)
-
-# Zip up bundled folder
-zf = ZipFile(bundle_path, mode='w', compression=ZIP_DEFLATED, allowZip64=True, compresslevel=9)
-for root, dirs, files in os.walk(tmp_dst_path):
-    for filename in files:
-        rel_path = get_rel_path(root + os.sep + filename, tmp_dst_path)
-        zf.write(root + os.sep + filename, rel_path)
-zf.close()
-
-# There's a temporary directory bug that causes auto-cleanup to sometimes fail
-# We're preventing crash messages from flooding the screen to keep things tidy
-with contextlib.suppress(Exception):
-    tmp_dir.cleanup()
-
-print(f"Created final mod zip at: {bundle_path}")
+if __name__ == "__main__":
+    main()

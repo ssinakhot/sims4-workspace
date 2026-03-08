@@ -1,7 +1,7 @@
 # Sims 4 Workspace
 
-One project to manage all your The Sims 4 mods. This will assist with decompiling the game's python scripts and compiling
-your mods for development and for release.
+One project to manage all your The Sims 4 mods. This will assist with decompiling the game's python scripts, compiling
+your mods for development and for release, and data-mining game `.package` files.
 
 ## Cloning the Repository and Initial Setup
 
@@ -21,8 +21,8 @@ To update the submodule to the latest version, use the following commands:
 cd sims4-workspace
 git submodule update --remote
 ```
- 
-## Loading the Project from WSL
+
+## Loading the Project from WSL using Devcontainer
 
 To load the project from WSL using VSCode, follow these steps:
 
@@ -35,7 +35,7 @@ To load the project from WSL using VSCode, follow these steps:
 
 3. Run the setup script to configure the environment:
     ```sh
-    ./wsl-setup.sh
+    .devcontainer/wsl-setup.sh
     ```
 
 4. Open VSCode and use the Remote - WSL extension to open the project folder:
@@ -46,17 +46,18 @@ To load the project from WSL using VSCode, follow these steps:
 5. Once the project is open in VSCode, you can open it in the devcontainer by selecting the `Reopen in Container` option from the Command Palette (Ctrl+Shift+P).
 
 This will set up the development environment inside a container, allowing you to work on the project seamlessly.
+
 ## Scripts
 
 ### compile.py
-This compiles and packages your `src` folder and creates a `build` folder containing your packaged mod ready for 
-deployment. It then copies your packaged mod to the games Mods folder under it's own sub-folder 
+This compiles and packages your `src` folder and creates a `build` folder containing your packaged mod ready for
+deployment. It then copies your packaged mod to the games Mods folder under it's own sub-folder
 `Mods/YourName_ProjectName/YourName_ProjectName.ts4script`.
 
 ### decompile.py
-This decompiles the game's python scripts and places them into a global projects folder. Throughout the process it prints 
-a pretty progress meter and at the end of each module it decompiled it shows the success and fail stats as well as how 
-long it took. It does this again at the end of the whole decompilation. It also clears out the old decompiled files for 
+This decompiles the game's python scripts and places them into a global projects folder. Throughout the process it prints
+a pretty progress meter and at the end of each module it decompiled it shows the success and fail stats as well as how
+long it took. It does this again at the end of the whole decompilation. It also clears out the old decompiled files for
 you and overall makes everything very smooth and simple.
 
 ### debug_setup.py and debug_teardown.py
@@ -70,7 +71,7 @@ you have PyCharm Pro then this will access the debugging capability in it and cr
 debugging for the rest of the game.
 
 Both the cheatcode and `debug_setup.py` give clear and well-written instructions informing you of what to do and how
-to set it up or what to expect. I've also written a 
+to set it up or what to expect. I've also written a
 [tutorial](https://medium.com/analytics-vidhya/the-sims-4-modern-python-modding-debugging-3736b37dbd9f) on how to
 use it.
 
@@ -79,20 +80,32 @@ Sigma1202 is the person who discovered this, I just made it into a script.
 
 ### devmode.py
 
-This enters into a special mode called "Dev Mode", it clears out compiled code and links your src folder to the 
-Mod Folder. When Dev Mode is activated, you don't need to compile anymore. If you run `compile.py` though it will exit 
+This enters into a special mode called "Dev Mode", it clears out compiled code and links your src folder to the
+Mod Folder. When Dev Mode is activated, you don't need to compile anymore. If you run `compile.py` though it will exit
 Dev Mode and do a normal compile.
 
 When inside of Dev Mode you can enter the cheat `devmode.reload [path.to.module]`, it'll reload the file live while
-the game is running so it doesn't need to be closed and re-opened. For example, to reload main.py enter 
-`devmode.reload main`. You can also enter paths to folders which will reload the entire folder or just not specify a 
+the game is running so it doesn't need to be closed and re-opened. For example, to reload main.py enter
+`devmode.reload main`. You can also enter paths to folders which will reload the entire folder or just not specify a
 path which will reload the entire project.
 
 This only works in devmode.
 
+### datamine.py
+
+Tools for parsing and extracting data from Sims 4 `.package` files (DBPF v2.0 format).
+
+```sh
+# Show package info (resource types, entry counts)
+python datamine.py info path/to/file.package
+
+# Extract tuning XML from a package
+python datamine.py extract path/to/file.package -o output_dir/
+```
+
 ### fix_tuning_names.py
 
-This expects you to have extracted the tuning files from `Sims 4 Studio` with the `Sub-Folders` option checked. What 
+This expects you to have extracted the tuning files from `Sims 4 Studio` with the `Sub-Folders` option checked. What
 this does is go through each and every tuning file and rename it to a much cleaner and better name.
 
 ### sync_packages.py
@@ -103,7 +116,7 @@ anytime yourself.
 
 ### bundle_build.py
 
-Zips up the build artifacts in a way that can be sent to Sims 4 Players or Mod Websites. It nests all the build 
+Zips up the build artifacts in a way that can be sent to Sims 4 Players or Mod Websites. It nests all the build
 artifacts in a subfolder named `CreatorName_ProjectName`. This way the player can directly unzip your mod into the Mods
 folder and it will all be self-contained in it's own folder.
 
@@ -119,6 +132,31 @@ When completed, all traces of anything built by the project template for your mo
 This is common when you just want to clean everything up, especially after your all done developing and want to
 essentially "Un-Build" and "Un-Make" everything.
 
+## Testing
+
+The project includes a pytest-based test suite. Run tests from the project root:
+
+```sh
+pytest
+pytest -v  # verbose output
+```
+
+## Project Structure
+
+```
+├── src/               # Your mod source code
+├── build/             # Compiled output (generated)
+├── assets/            # .package files to include with the mod
+├── util/              # Core library modules
+├── datamining/        # .package file parser and tuning XML extractor
+├── game_mods/         # In-game mod scripts (loaded by Sims 4 engine)
+├── tests/             # Test suite
+├── decompile/         # Decompilation input/output
+├── .devcontainer/     # Dev container config and setup scripts
+├── pycdc/             # Git submodule: decompiler tool
+└── unpyc37/           # Git submodule: decompiler tool
+```
+
 ## How to get started with this
 
 1. Download it to your computer wherever you like, this will be your project folder for one project.
@@ -127,8 +165,8 @@ essentially "Un-Build" and "Un-Make" everything.
 3. Update the settings to match your needs.
 4. If you don't already have the library decompiled, run `decompile.py`.
 5. Using your favorite editor whether it be `Sublime`, `Notepad++`, `Visual Studio Code`, `PyCharm`, or wherever begin
-adding files to the `src` folder. 
-6. Run `compile.py` and test it out. 
+adding files to the `src` folder.
+6. Run `compile.py` and test it out.
 
 ## Credits
 
@@ -139,4 +177,3 @@ Licensed [Apache2](https://www.apache.org/licenses/LICENSE-2.0)
 Project [Sims4ScriptingTemplate](https://github.com/mycroftjr/Sims4ScriptingTemplate)\
 Copyright (c) 2023 [mycroftjr](https://github.com/mycroftjr)\
 Licensed [Apache2](https://www.apache.org/licenses/LICENSE-2.0)
-
