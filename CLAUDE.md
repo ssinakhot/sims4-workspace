@@ -6,6 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Sims 4 Workspace is a Python-based development environment for creating The Sims 4 mods. It handles decompilation of the game's Python bytecode, compilation/packaging of mod scripts into `.ts4script` format, and provides a dev mode with live file watching for hot reloading during development. It also includes data-mining tools for parsing Sims 4 `.package` files and extracting tuning XML.
 
+**Python 3.7 only.** The Sims 4 engine embeds Python 3.7, so all code in this project must be compatible with Python 3.7. This means:
+- No `list[X]`, `dict[X, Y]`, or `tuple[X]` in type hints — use `typing.List`, `typing.Dict`, `typing.Tuple`, etc.
+- No walrus operator (`:=`), no `dataclasses.field(kw_only=...)`, no positional-only params (`/`).
+- No `importlib.resources` features added after 3.7.
+
 ## Key Commands
 
 All scripts are run from the project root with `python <script>`.
@@ -39,7 +44,7 @@ Copy `settings.py.example` to `settings.py` (gitignored) before first use. Key s
 - `build/` — Compiled `.ts4script` output (generated)
 - `assets/` — `.package` files to include with the mod
 - `util/` — Core library modules used by the top-level scripts
-- `datamining/` — Package for parsing `.package` files and tuning XML
+- `util/datamining/` — Package for parsing `.package` files and tuning XML
 - `game_mods/` — In-game mod scripts loaded by the Sims 4 engine (devmode_cmd.py, debug_cmd.py)
 - `tests/` — pytest-based test suite
 - `decompile/input/` — Drop zips here for `decompile.py --folder`
@@ -67,7 +72,7 @@ All root-level scripts follow the same pattern: import settings and util functio
 
 ### Data Mining
 
-`datamining/package_reader.py` parses DBPF v2.0 `.package` files (96-byte header, resource index with type/group/instance keys). `datamining/tuning_parser.py` parses the extracted tuning XML into structured `TuningFile` objects. Key resource type: `0x03B33DDF` = Tuning XML.
+`util/datamining/package_reader.py` parses DBPF v2.0 `.package` files (96-byte header, resource index with type/group/instance keys). `util/datamining/tuning_parser.py` parses the extracted tuning XML into structured `TuningFile` objects. Key resource type: `0x03B33DDF` = Tuning XML.
 
 ### Mod Naming Convention
 

@@ -53,7 +53,9 @@
 		// ***********************************************
 		// ***********************************************
 		// Windows WSL Mounts 
-		"source=/mnt/c/Program Files/EA Games/The Sims 4,target=${containerWorkspaceFolder}/decompile/game/,type=bind",
+		//"source=/mnt/c/Program Files/EA Games/The Sims 4,target=${containerWorkspaceFolder}/decompile/game/,type=bind",
+		//"source=${env:USERPROFILE}/Documents/Electronic Arts/The Sims 4,target=${containerWorkspaceFolder}/Documents/Electronic Arts/The Sims 4,type=bind"
+		"source=/mnt/d/SteamLibrary/steamapps/common/The Sims 4,target=${containerWorkspaceFolder}/decompile/game/,type=bind",
 		"source=${env:USERPROFILE}/Documents/Electronic Arts/The Sims 4,target=${containerWorkspaceFolder}/Documents/Electronic Arts/The Sims 4,type=bind"
 	]
 }

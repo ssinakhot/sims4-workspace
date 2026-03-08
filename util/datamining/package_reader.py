@@ -10,7 +10,7 @@ Sims 4 .package files use the DBPF (Database Packed File) v2.0 format:
 import struct
 import zlib
 from dataclasses import dataclass, field
-from typing import BinaryIO
+from typing import BinaryIO, List
 
 
 # Known resource type IDs
@@ -67,7 +67,7 @@ class PackageReader:
     def __init__(self, filepath: str):
         self.filepath = filepath
         self.header = PackageHeader()
-        self.entries: list[IndexEntry] = []
+        self.entries: List[IndexEntry] = []
         self._flags: int = 0
 
     def read(self) -> None:
@@ -164,7 +164,7 @@ class PackageReader:
 
         return data
 
-    def extract_tuning_entries(self) -> list[IndexEntry]:
+    def extract_tuning_entries(self) -> List[IndexEntry]:
         """Return all index entries that are tuning XML resources."""
         return [e for e in self.entries if e.key.is_tuning]
 

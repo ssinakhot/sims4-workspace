@@ -34,7 +34,11 @@ def exec_cli(package: str, args: [str], **kwargs) -> Tuple[bool, Union[Completed
     elif package == "python3":
         cmd_list = [get_sys_path(), *args]
     else:
-        cmd_list = [get_sys_path(), "-m", package, *args]
+        script_path = os.path.join(get_sys_scripts_folder(), package)
+        if os.path.isfile(script_path):
+            cmd_list = [script_path, *args]
+        else:
+            cmd_list = [get_sys_path(), "-m", package, *args]
     try:
         # TODO: make timeout scale with input file size?
         kwargs.setdefault("capture_output", True)

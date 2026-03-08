@@ -157,12 +157,47 @@ pytest -v  # verbose output
 └── unpyc37/           # Git submodule: decompiler tool
 ```
 
+## Requirements
+
+This project requires **Python 3.7** (the version embedded in The Sims 4 engine). All code must remain compatible with Python 3.7.
+
+### Dev Container (recommended)
+
+If you use VS Code with the Dev Containers extension, simply open the project and select **Reopen in Container**. The container installs Python 3.7, pip, and all dependencies automatically.
+
+### Manual Setup (without Dev Container)
+
+1. Install [Python 3.7](https://www.python.org/downloads/release/python-3717/). On Linux you can use the [deadsnakes PPA](https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa):
+    ```sh
+    sudo add-apt-repository ppa:deadsnakes/ppa
+    sudo apt-get update
+    sudo apt-get install python3.7 python3.7-distutils python3.7-dev
+    ```
+
+2. Install pip for Python 3.7 (if not already available):
+    ```sh
+    wget https://bootstrap.pypa.io/pip/3.7/get-pip.py
+    python3.7 get-pip.py
+    rm get-pip.py
+    ```
+
+3. Install dependencies:
+    ```sh
+    pip install -r requirements.txt
+    ```
+
+4. Initialize git submodules (needed for decompilation):
+    ```sh
+    git submodule update --init --recursive
+    ```
+
+5. Copy `settings.py.example` to `settings.py` and update the settings to match your environment.
+
 ## How to get started with this
 
 1. Download it to your computer wherever you like, this will be your project folder for one project.
 2. Rename the folder to the name of your project.
-3. Copy `settings.py.example` to another file called `settings.py`, this will become your personal settings.
-3. Update the settings to match your needs.
+3. Follow the **Manual Setup** steps above to install Python 3.7 and dependencies.
 4. If you don't already have the library decompiled, run `decompile.py`.
 5. Using your favorite editor whether it be `Sublime`, `Notepad++`, `Visual Studio Code`, `PyCharm`, or wherever begin
 adding files to the `src` folder.

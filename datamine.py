@@ -1,8 +1,8 @@
 import argparse
 import os
 
-from datamining.package_reader import PackageReader
-from datamining.tuning_parser import TuningParser
+from util.datamining.package_reader import PackageReader
+from util.datamining.tuning_parser import TuningParser
 
 
 def cmd_extract(args):
@@ -37,7 +37,7 @@ def cmd_info(args):
     print(f"  Entries: {reader.header.index_entry_count}")
 
     # Count by type
-    type_counts: dict[int, int] = {}
+    type_counts = {}
     for entry in reader.entries:
         type_counts[entry.key.type_id] = type_counts.get(entry.key.type_id, 0) + 1
 

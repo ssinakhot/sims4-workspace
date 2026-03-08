@@ -12,6 +12,19 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y python3.7 python3.7-distutils python3.7-dev python3.7-venv && \
+    ln -sf /usr/bin/python3.7 /usr/local/bin/python && \
+    ln -sf /usr/bin/python3.7 /usr/local/bin/python3 && \
+    wget -qO /tmp/get-pip.py https://bootstrap.pypa.io/pip/3.7/get-pip.py && \
+    python /tmp/get-pip.py && \
+    rm /tmp/get-pip.py && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 USER vscode
 
 RUN curl -fsSL https://claude.ai/install.sh | bash

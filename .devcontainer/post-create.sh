@@ -14,6 +14,9 @@ sudo apt-get install -y cmake
 # Initialize and update git submodules
 git submodule update --init --recursive
 
+# Install Python dependencies
+pip install -r "$PROJECT_DIR/requirements.txt"
+
 # Clean up package lists
 sudo apt-get clean
 

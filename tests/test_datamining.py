@@ -1,8 +1,9 @@
 import struct
 import zlib
+from typing import List, Tuple
 import pytest
 
-from datamining.package_reader import (
+from util.datamining.package_reader import (
     PackageReader,
     ResourceKey,
     IndexEntry,
@@ -10,12 +11,12 @@ from datamining.package_reader import (
     DBPF_HEADER_SIZE,
     TUNING_TYPE_ID,
 )
-from datamining.tuning_parser import TuningParser, TuningFile
+from util.datamining.tuning_parser import TuningParser, TuningFile
 
 
 # ---- Helper to build a minimal DBPF v2.0 file ----
 
-def build_test_package(resources: list[tuple[int, int, int, bytes]]) -> bytes:
+def build_test_package(resources: List[Tuple[int, int, int, bytes]]) -> bytes:
     """Build a minimal DBPF v2.0 .package file in memory.
 
     resources: list of (type_id, group, instance, data) tuples
@@ -124,6 +125,53 @@ class TestPackageReader:
         tuning_entries = reader.extract_tuning_entries()
         assert len(tuning_entries) == 2
         assert all(e.key.is_tuning for e in tuning_entries)
+
+    def test_extract_resource_uncompressed(self, tmp_path):
+        raw_data = b"hello world resource data"
+        pkg_data = build_test_package([
+            (0x00000001, 0, 100, raw_data),
+        ])
+        pkg_file = tmp_path / "test.package"
+        pkg_file.write_bytes(pkg_data)
+
+        reader = PackageReader(str(pkg_file))
+        reader.read()
+
+        result = reader.extract_resource(reader.entries[0])
+        assert result == raw_data
+
+    def test_extract_tuning_xml(self, tmp_path):
+        xml_bytes = b'<I s="1" i="buff" n="buff_Test"></I>'
+        pkg_data = build_test_package([
+            (TUNING_TYPE_ID, 0, 100, xml_bytes),
+        ])
+        pkg_file = tmp_path / "test.package"
+        pkg_file.write_bytes(pkg_data)
+
+        reader = PackageReader(str(pkg_file))
+        reader.read()
+
+        tuning_entries = reader.extract_tuning_entries()
+        xml_str = reader.extract_tuning_xml(tuning_entries[0])
+        assert xml_str == xml_bytes.decode("utf-8")
+        assert "buff_Test" in xml_str
+
+
+class TestIndexEntry:
+    def test_is_compressed_true(self):
+        key = ResourceKey(type_id=1, group=0, instance=0)
+        entry = IndexEntry(key=key, offset=0, file_size=50, mem_size=100, compressed=True)
+        assert entry.is_compressed
+
+    def test_is_compressed_false_when_flag_off(self):
+        key = ResourceKey(type_id=1, group=0, instance=0)
+        entry = IndexEntry(key=key, offset=0, file_size=50, mem_size=100, compressed=False)
+        assert not entry.is_compressed
+
+    def test_is_compressed_false_when_sizes_equal(self):
+        key = ResourceKey(type_id=1, group=0, instance=0)
+        entry = IndexEntry(key=key, offset=0, file_size=100, mem_size=100, compressed=True)
+        assert not entry.is_compressed
 
 
 # ---- TuningParser Tests ----

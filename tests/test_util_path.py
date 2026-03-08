@@ -1,10 +1,16 @@
 import os
+import sys
 import pytest
 
 from util.path import (
     get_rel_path,
     get_file_stem,
     replace_extension,
+    get_default_executable_extension,
+    get_sys_path,
+    get_sys_folder,
+    get_sys_scripts_folder,
+    get_full_filepath,
     ensure_path_created,
     remove_dir,
     remove_file,
@@ -48,6 +54,81 @@ class TestReplaceExtension:
         result = replace_extension("/home/user/test.py", "txt")
         assert result.endswith("test.txt")
         assert "/home/user" in result or "home" in result
+
+
+class TestGetDefaultExecutableExtension:
+    def test_returns_string(self):
+        result = get_default_executable_extension()
+        assert isinstance(result, str)
+
+    def test_matches_sys_executable(self):
+        from pathlib import Path
+        expected = Path(sys.executable).suffix
+        assert get_default_executable_extension() == expected
+
+
+class TestGetSysPath:
+    def test_returns_executable(self):
+        assert get_sys_path() == sys.executable
+
+    def test_is_absolute(self):
+        assert os.path.isabs(get_sys_path())
+
+
+class TestGetSysFolder:
+    def test_returns_parent_of_executable(self):
+        result = get_sys_folder()
+        assert result == str(os.path.dirname(sys.executable))
+
+
+class TestGetSysScriptsFolder:
+    def test_returns_existing_directory(self):
+        result = get_sys_scripts_folder()
+        assert os.path.isdir(result)
+
+    def test_unix_appends_bin(self, monkeypatch):
+        monkeypatch.setattr(os, "name", "posix")
+        # Simulate a sys folder that doesn't end with 'bin'
+        monkeypatch.setattr("util.path.get_sys_folder", lambda: "/usr/local")
+        result = get_sys_scripts_folder()
+        assert result == "/usr/local/bin"
+
+    def test_unix_already_bin(self, monkeypatch):
+        monkeypatch.setattr(os, "name", "posix")
+        monkeypatch.setattr("util.path.get_sys_folder", lambda: "/usr/local/bin")
+        result = get_sys_scripts_folder()
+        assert result == "/usr/local/bin"
+
+    def test_windows_appends_scripts(self, monkeypatch):
+        monkeypatch.setattr(os, "name", "nt")
+        monkeypatch.setattr("util.path.get_sys_folder", lambda: "C:\\Python37")
+        result = get_sys_scripts_folder()
+        assert result == os.path.join("C:\\Python37", "Scripts")
+
+    def test_windows_already_bin(self, monkeypatch):
+        monkeypatch.setattr(os, "name", "nt")
+        monkeypatch.setattr("util.path.get_sys_folder", lambda: "C:\\Python37\\bin")
+        result = get_sys_scripts_folder()
+        assert result == "C:\\Python37\\bin"
+
+
+class TestGetFullFilepath:
+    def test_finds_exact_file_unix(self, tmp_path):
+        # On Unix, get_full_filepath globs for the exact base_name (no wildcard)
+        (tmp_path / "myfile").write_text("hello")
+        result = get_full_filepath(str(tmp_path), "myfile")
+        assert result.endswith("myfile")
+
+    def test_finds_file_with_extension_windows(self, tmp_path, monkeypatch):
+        # On Windows, it globs for base_name.*
+        monkeypatch.setattr(os, "name", "nt")
+        (tmp_path / "myfile.txt").write_text("hello")
+        result = get_full_filepath(str(tmp_path), "myfile")
+        assert result.endswith("myfile.txt")
+
+    def test_raises_on_missing(self, tmp_path):
+        with pytest.raises(FileNotFoundError):
+            get_full_filepath(str(tmp_path), "nonexistent")
 
 
 class TestEnsurePathCreated:

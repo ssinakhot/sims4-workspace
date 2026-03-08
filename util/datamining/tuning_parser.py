@@ -7,6 +7,7 @@ Tuning files define game objects, interactions, buffs, traits, and other game da
 
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
+from typing import List
 
 
 @dataclass
@@ -16,7 +17,7 @@ class TuningFile:
     tuning_type: str  # e.g. "interaction", "buff", "trait", "object"
     name: str         # e.g. "buff_Angry"
     cls: str = ""     # e.g. "sims4.tuning.instances.buff"
-    references: list[int] = field(default_factory=list)  # instance IDs this tuning references
+    references: List[int] = field(default_factory=list)  # instance IDs this tuning references
 
 
 class TuningParser:
@@ -48,7 +49,7 @@ class TuningParser:
         )
 
     @staticmethod
-    def _collect_references(element: ET.Element) -> list[int]:
+    def _collect_references(element: ET.Element) -> List[int]:
         """Recursively collect all tuning instance ID references (s= attributes on T tags)."""
         refs = []
         for child in element.iter():
@@ -64,7 +65,7 @@ class TuningParser:
         return refs
 
     @staticmethod
-    def parse_multiple(xml_strings: list[str]) -> list[TuningFile]:
+    def parse_multiple(xml_strings: List[str]) -> List[TuningFile]:
         """Parse multiple tuning XML strings."""
         results = []
         for xml_str in xml_strings:
