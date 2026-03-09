@@ -2,6 +2,7 @@ import argparse
 import os
 
 from util.datamining.package_reader import PackageReader
+from util.datamining.resource_types import RESOURCE_TYPE_LABELS
 from util.datamining.tuning_parser import TuningParser
 
 
@@ -43,7 +44,7 @@ def cmd_info(args):
 
     print(f"  Resource types:")
     for type_id, count in sorted(type_counts.items()):
-        label = "Tuning XML" if type_id == 0x03B33DDF else ""
+        label = RESOURCE_TYPE_LABELS.get(type_id, "")
         print(f"    0x{type_id:08X}: {count} entries{' (' + label + ')' if label else ''}")
 
 

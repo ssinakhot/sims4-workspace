@@ -12,9 +12,16 @@ import zlib
 from dataclasses import dataclass, field
 from typing import BinaryIO, List
 
+from util.datamining.refpack import is_refpack, decompress as refpack_decompress
+from util.datamining.resource_types import (
+    TUNING_TYPE_ID,
+    COMBINED_TUNING_TYPE_ID,
+    STRING_TABLE_TYPE_ID,
+    RESOURCE_TYPE_LABELS,
+)
 
-# Known resource type IDs
-TUNING_TYPE_ID = 0x03B33DDF
+# Re-export for backwards compatibility
+TUNING_TYPE_ID = TUNING_TYPE_ID
 
 DBPF_MAGIC = b"DBPF"
 DBPF_HEADER_SIZE = 96
@@ -152,21 +159,45 @@ class PackageReader:
             data = f.read(entry.file_size)
 
         if entry.is_compressed:
-            # DBPF uses zlib (ZLIB compression type 0x5A42)
-            try:
-                data = zlib.decompress(data)
-            except zlib.error:
-                # Some entries have a 4-byte compression header to skip
+            # Try RefPack (EA's proprietary compression) first
+            if is_refpack(data):
+                data = refpack_decompress(data)
+            else:
+                # Fall back to zlib (compression type 0x5A42)
                 try:
-                    data = zlib.decompress(data[4:])
+                    data = zlib.decompress(data)
                 except zlib.error:
-                    raise ValueError(f"Failed to decompress resource {entry.key}")
+                    # Some entries have a 4-byte compression header to skip
+                    try:
+                        data = zlib.decompress(data[4:])
+                    except zlib.error:
+                        raise ValueError(f"Failed to decompress resource {entry.key}")
 
         return data
 
+    def extract_by_type(self, type_id: int) -> List[IndexEntry]:
+        """Return all index entries matching a resource type ID."""
+        return [e for e in self.entries if e.key.type_id == type_id]
+
     def extract_tuning_entries(self) -> List[IndexEntry]:
         """Return all index entries that are tuning XML resources."""
-        return [e for e in self.entries if e.key.is_tuning]
+        return self.extract_by_type(TUNING_TYPE_ID)
+
+    def extract_combined_tuning_entries(self) -> List[IndexEntry]:
+        """Return all CombinedTuning XML entries."""
+        return self.extract_by_type(COMBINED_TUNING_TYPE_ID)
+
+    def extract_string_table_entries(self, locale_group: int = 0x00000000) -> List[IndexEntry]:
+        """Return String Table entries, optionally filtered by locale group.
+
+        Args:
+            locale_group: Group ID for locale filtering (0x00000000 = English).
+                Pass None to return all locales.
+        """
+        entries = self.extract_by_type(STRING_TABLE_TYPE_ID)
+        if locale_group is not None:
+            entries = [e for e in entries if e.key.group == locale_group]
+        return entries
 
     def extract_tuning_xml(self, entry: IndexEntry) -> str:
         """Extract a tuning XML resource and return it as a string."""
