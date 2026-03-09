@@ -11,8 +11,7 @@
 #    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
-import contextlib, fnmatch, os, shutil, tempfile
-from pathlib import Path
+import fnmatch, os
 from zipfile import PyZipFile, ZipFile, ZIP_STORED
 
 from util.path import ensure_path_created, get_sys_folder, get_rel_path, remove_dir, remove_file
@@ -89,58 +88,28 @@ def debug_install_egg(egg_path: str, mods_dir, dest_name: str, mod_folder_name: 
     """
 
     print("Re-packaging and installing the debugging capability mod...")
-    # Get egg filename and path
-    filename = Path(egg_path).name
     mods_sub_dir = os.path.join(mods_dir, mod_folder_name)
     mod_path = os.path.join(mods_sub_dir, dest_name + ".ts4script")
 
     ensure_path_created(mods_sub_dir)
+    remove_file(mod_path)
 
     # Get python ctypes folder
     sys_ctypes_folder = os.path.join(get_sys_folder(), "Lib", "ctypes")
 
-    # Create temp directory
-    tmp_dir = tempfile.TemporaryDirectory()
-    tmp_egg = tmp_dir.name + os.sep + filename
+    with ZipFile(mod_path, mode='w', compression=ZIP_STORED, allowZip64=True) as zout:
+        # Copy all entries from the egg directly into the output zip
+        with ZipFile(egg_path) as zin:
+            for entry in zin.infolist():
+                zout.writestr(entry, zin.read(entry.filename))
 
-    # Remove old mod in mods folder there, if it exists
-    remove_file(mod_path)
-
-    # Copy egg to temp path
-    shutil.copyfile(egg_path, tmp_egg)
-
-    # TODO: simplify
-    # Extract egg
-    # This step is a bit redundant but I need to copy over everything but one folder into the zip file and I don't
-    # know how to do that in python so I copy over the zip, extract it, copy in the whole folder, delete the one
-    # sub-folder, then re-zip everything up. It's a pain but it's what I know how to do now and Google's not much help
-    zin = ZipFile(tmp_egg)
-    zin.extractall(tmp_dir.name)
-    zin.close()
-
-    # Remove archive
-    remove_file(tmp_egg)
-
-    # Copy ctype folder to extracted archive
-    shutil.copytree(sys_ctypes_folder, tmp_dir.name + os.sep + "ctypes")
-
-    # Remove that one folder
-    remove_dir(tmp_dir.name + os.sep + "ctypes" + os.sep + "__pycache__")
-
-    # Grab a handle on the egg
-    zout = ZipFile(mod_path, mode='w', compression=ZIP_STORED, allowZip64=True)
-
-    # Add all the files in the tmp directory to the zip file
-    for folder, subs, files in os.walk(tmp_dir.name):
-        for file in files:
-            archive_path = get_rel_path(folder + os.sep + file, tmp_dir.name)
-            zout.write(folder + os.sep + file, archive_path)
-    zout.close()
-
-    # There's a temporary directory bug that causes auto-cleanup to sometimes fail
-    # We're preventing crash messages from flooding the screen to keep things tidy
-    with contextlib.suppress(Exception):
-        tmp_dir.cleanup()
+        # Add system ctypes folder, skipping __pycache__
+        for folder, subs, files in os.walk(sys_ctypes_folder):
+            subs[:] = [s for s in subs if s != "__pycache__"]
+            for file in files:
+                full_path = os.path.join(folder, file)
+                archive_path = os.path.join("ctypes", get_rel_path(full_path, sys_ctypes_folder))
+                zout.write(full_path, archive_path)
 
 
 def remove_debug_mods(mods_dir: str, mod_folder_name: str) -> None:

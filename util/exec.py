@@ -28,7 +28,6 @@ def exec_cli(package: str, args: [str], **kwargs) -> Tuple[bool, Union[Completed
     :param args: Arguments to provide to the package
     :return: Returns tuple of (boolean indicating success, the CompletedProcess object)
     """
-    # TODO: log stderr to a different file for each decompiler
     if os.path.isfile(package):
         cmd_list = [package, *args]
     elif package == "python3":
@@ -40,7 +39,6 @@ def exec_cli(package: str, args: [str], **kwargs) -> Tuple[bool, Union[Completed
         else:
             cmd_list = [get_sys_path(), "-m", package, *args]
     try:
-        # TODO: make timeout scale with input file size?
         kwargs.setdefault("capture_output", True)
         kwargs.setdefault("timeout", decompiler_timeout)
         result = run(cmd_list, text=True, encoding="utf-8", **kwargs)

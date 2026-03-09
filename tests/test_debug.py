@@ -79,3 +79,76 @@ class TestDebugTeardown:
         from util.debug import debug_teardown
         # Should not raise
         debug_teardown(str(tmp_path), "NonExistent")
+
+
+class TestDebugInstallEgg:
+    @pytest.fixture
+    def fake_egg(self, tmp_path):
+        """Create a fake PyCharm debug egg (zip with some files)."""
+        import zipfile
+        egg_path = str(tmp_path / "pydevd-pycharm.egg")
+        with zipfile.ZipFile(egg_path, "w") as zf:
+            zf.writestr("pydevd/__init__.py", "# pydevd init\n")
+            zf.writestr("pydevd/debugger.py", "# debugger code\n")
+            zf.writestr("EGG-INFO/PKG-INFO", "Name: pydevd-pycharm\n")
+        return egg_path
+
+    @pytest.fixture
+    def fake_sys_folder(self, tmp_path):
+        """Create a fake sys folder with a ctypes directory."""
+        sys_folder = tmp_path / "fakepython"
+        ctypes_dir = sys_folder / "Lib" / "ctypes"
+        ctypes_dir.mkdir(parents=True)
+        (ctypes_dir / "__init__.py").write_text("# ctypes init\n")
+        (ctypes_dir / "_endian.py").write_text("# endian\n")
+        cache_dir = ctypes_dir / "__pycache__"
+        cache_dir.mkdir()
+        (cache_dir / "__init__.cpython-37.pyc").write_bytes(b"fakepyc")
+        return str(sys_folder)
+
+    def test_creates_ts4script_with_egg_and_ctypes(self, tmp_path, fake_egg, fake_sys_folder, monkeypatch):
+        import zipfile
+        from util.debug import debug_install_egg
+
+        monkeypatch.setattr("util.debug.get_sys_folder", lambda: fake_sys_folder)
+
+        mods_dir = str(tmp_path / "Mods")
+        os.makedirs(mods_dir, exist_ok=True)
+
+        debug_install_egg(fake_egg, mods_dir, "pycharm-debug", "DebugFolder")
+
+        mod_path = os.path.join(mods_dir, "DebugFolder", "pycharm-debug.ts4script")
+        assert os.path.isfile(mod_path)
+        assert zipfile.is_zipfile(mod_path)
+
+        with zipfile.ZipFile(mod_path) as zf:
+            names = zf.namelist()
+            # Egg contents are included
+            assert "pydevd/__init__.py" in names
+            assert "pydevd/debugger.py" in names
+            assert "EGG-INFO/PKG-INFO" in names
+            # ctypes files are included
+            assert "ctypes/__init__.py" in names
+            assert "ctypes/_endian.py" in names
+            # __pycache__ is excluded
+            pycache_entries = [n for n in names if "__pycache__" in n]
+            assert pycache_entries == []
+
+    def test_replaces_existing_mod(self, tmp_path, fake_egg, fake_sys_folder, monkeypatch):
+        from util.debug import debug_install_egg
+
+        monkeypatch.setattr("util.debug.get_sys_folder", lambda: fake_sys_folder)
+
+        mods_dir = str(tmp_path / "Mods")
+        mod_dir = os.path.join(mods_dir, "DebugFolder")
+        os.makedirs(mod_dir)
+        old_mod = os.path.join(mod_dir, "pycharm-debug.ts4script")
+        with open(old_mod, "w") as f:
+            f.write("old content")
+
+        debug_install_egg(fake_egg, mods_dir, "pycharm-debug", "DebugFolder")
+
+        # File should be replaced, not contain old content
+        with open(old_mod, "rb") as f:
+            content = f.read()
+        assert b"old content" not in content

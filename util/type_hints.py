@@ -54,7 +54,6 @@ def find_protos(src_dir: str, dst_dir: str) -> bool:
     :return: True iff the proto scanning worked
     """
 
-    # TODO: try https://stackoverflow.com/questions/19418655/restoring-proto-file-from-descriptor-string-possible ?
     import importlib, os, pkgutil
 
     os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'python'
