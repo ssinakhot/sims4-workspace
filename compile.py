@@ -12,14 +12,21 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-# Helpers
 from util.compile import compile_src
-from settings import mods_folder, src_path, creator_name, build_path, project_name
+from util.sync_packages import sync_packages
+from util.bundle_build import bundle_build
+from settings import mods_folder, src_path, creator_name, build_path, project_name, assets_path
 import traceback
 
-try:
-    compile_src(creator_name, src_path, build_path, mods_folder, project_name)
-    exec(open("sync_packages.py").read())
-    exec(open("bundle_build.py").read())
-except Exception as e:
-    traceback.print_exc()
+
+def main():
+    try:
+        compile_src(creator_name, src_path, build_path, mods_folder, project_name)
+        sync_packages(assets_path, mods_folder, build_path, creator_name, project_name)
+        bundle_build(build_path, creator_name, project_name)
+    except Exception as e:
+        traceback.print_exc()
+
+
+if __name__ == "__main__":
+    main()

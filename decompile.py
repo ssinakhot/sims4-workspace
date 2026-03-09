@@ -44,8 +44,7 @@ if __name__ == "__main__":
     if args.folder:
         decompile_zips("./decompile/input", projects_python_path)
     elif args.game:
-        decompile_zips(gameplay_folder_data, projects_python_path)
-        decompile_zips(gameplay_folder_game, projects_python_path)
+        decompile_zips([gameplay_folder_data, gameplay_folder_game], projects_python_path)
 
     # Print final statistics
     decompile_print_totals()

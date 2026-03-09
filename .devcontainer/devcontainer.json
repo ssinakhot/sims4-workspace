@@ -2,8 +2,10 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
 	"name": "sims4-workspace",
-	"image": "mcr.microsoft.com/devcontainers/python:1-3.7-bullseye",
-	"postCreateCommand": "${containerWorkspaceFolder}/post-create.sh",
+	"dockerComposeFile": ["compose.yml"],
+  	"service": "devcontainer",
+	"workspaceFolder": "/workspace",
+	"postCreateCommand": "${containerWorkspaceFolder}/.devcontainer/post-create.sh",
 	"customizations": {
 		"vscode": {
 			"settings": {
@@ -41,8 +43,8 @@
 		// ***********************************************
 		// ***********************************************
 		// MacOS mount; You need to add /Applications/EA Games to your VirtioFS - Check Docker Desktop settings
-		"source=/Applications/EA Games/The Sims 4.app/Contents,target=${containerWorkspaceFolder}/decompile/game/,type=bind",
-		"source=${env:HOME}/Documents/Electronic Arts/The Sims 4,target=${containerWorkspaceFolder}/Documents/Electronic Arts/The Sims 4,type=bind"
+		//"source=/Applications/EA Games/The Sims 4.app/Contents,target=${containerWorkspaceFolder}/decompile/game/,type=bind",
+		//"source=${env:HOME}/Documents/Electronic Arts/The Sims 4,target=${containerWorkspaceFolder}/Documents/Electronic Arts/The Sims 4,type=bind"
 		// ***********************************************
 		// ***********************************************
 		// Windows Mounts
@@ -53,5 +55,7 @@
 		// Windows WSL Mounts 
 		//"source=/mnt/c/Program Files/EA Games/The Sims 4,target=${containerWorkspaceFolder}/decompile/game/,type=bind",
 		//"source=${env:USERPROFILE}/Documents/Electronic Arts/The Sims 4,target=${containerWorkspaceFolder}/Documents/Electronic Arts/The Sims 4,type=bind"
+		"source=/mnt/d/SteamLibrary/steamapps/common/The Sims 4,target=${containerWorkspaceFolder}/decompile/game/,type=bind",
+		"source=${env:USERPROFILE}/Documents/Electronic Arts/The Sims 4,target=${containerWorkspaceFolder}/Documents/Electronic Arts/The Sims 4,type=bind"
 	]
 }

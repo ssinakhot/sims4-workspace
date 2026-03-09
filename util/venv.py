@@ -10,6 +10,18 @@ class Venv:
         else:
             self.virtual_python = os.path.join(self.virtual_dir, "bin", "python")
 
+    def _has_pip(self):
+        result = subprocess.call(
+            [self.virtual_python, "-m", "pip", "--version"],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+        return result == 0
+
+    def _ensure_pip(self):
+        if not self._has_pip():
+            print("pip not found in venv, bootstrapping with ensurepip...")
+            subprocess.call([self.virtual_python, "-m", "ensurepip"])
+
     def install_virtual_env(self):
         if not os.path.exists(self.virtual_python):
             build = venv.EnvBuilder(symlinks=True, upgrade=True, with_pip=True)
@@ -17,6 +29,7 @@ class Venv:
             print("created virtual environment: " + self.virtual_dir)
         else:
             print("found virtual python: " + self.virtual_python)
+        self._ensure_pip()
 
     def is_venv(self):
         return sys.prefix==self.virtual_dir

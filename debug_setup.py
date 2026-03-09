@@ -25,27 +25,33 @@ from util.debug import debug_ensure_pycharm_debug_package_installed, install_deb
 from settings import mods_folder, debug_eggs_path, debug_cmd_mod_src_path, debug_cmd_mod_name, debug_capability_name, \
     debug_mod_subfolder
 
-# Ensure PyCharm Pro debug package is installed
-debug_ensure_pycharm_debug_package_installed()
 
-# Install the debug mod and egg
-# The mod creates a cheat "pycharm.debug" which activates the debug process
-# The egg injects the code into the game so that the debug process can happen
-debug_teardown(mods_folder, debug_mod_subfolder)
-install_debug_mod(debug_cmd_mod_src_path, mods_folder, debug_cmd_mod_name, debug_mod_subfolder)
-debug_install_egg(debug_eggs_path, mods_folder, debug_capability_name, debug_mod_subfolder)
+def main():
+    # Ensure PyCharm Pro debug package is installed
+    debug_ensure_pycharm_debug_package_installed()
 
-print("")
-print("Complete!")
-print("")
-print("Step 1: Create a 'Python Debug Server' configuration In PyCharm Pro from the template using")
-print("        IDE host name: localhost")
-print("        port: 5678")
-print("Step 2: Select debug profile and begin debugging")
-print("Step 3: Load up a playable lot in the game")
-print("Step 4: Enter the cheatcode 'pycharm.debug'")
-print("Step 5: Switch windows to the debugger and hit resume")
-print("Step 6: The game and debugger are now connected, you're ready to start debugging!")
-print("")
-print("When you're done debugging, run 'debug_teardown.py' to uninstall the debugging capability. Otherwise leaving")
-print("it in just makes your game slower")
+    # Install the debug mod and egg
+    # The mod creates a cheat "pycharm.debug" which activates the debug process
+    # The egg injects the code into the game so that the debug process can happen
+    debug_teardown(mods_folder, debug_mod_subfolder)
+    install_debug_mod(debug_cmd_mod_src_path, mods_folder, debug_cmd_mod_name, debug_mod_subfolder)
+    debug_install_egg(debug_eggs_path, mods_folder, debug_capability_name, debug_mod_subfolder)
+
+    print("")
+    print("Complete!")
+    print("")
+    print("Step 1: Create a 'Python Debug Server' configuration In PyCharm Pro from the template using")
+    print("        IDE host name: localhost")
+    print("        port: 5678")
+    print("Step 2: Select debug profile and begin debugging")
+    print("Step 3: Load up a playable lot in the game")
+    print("Step 4: Enter the cheatcode 'pycharm.debug'")
+    print("Step 5: Switch windows to the debugger and hit resume")
+    print("Step 6: The game and debugger are now connected, you're ready to start debugging!")
+    print("")
+    print("When you're done debugging, run 'debug_teardown.py' to uninstall the debugging capability. Otherwise leaving")
+    print("it in just makes your game slower")
+
+
+if __name__ == "__main__":
+    main()

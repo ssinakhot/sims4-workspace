@@ -17,14 +17,20 @@ from util.path import remove_dir
 from util.watcher import watcher_folder_remove
 from settings import mods_folder, debug_mod_subfolder, creator_name, project_name, build_path
 
-print("Removing Debug Setup...")
-debug_teardown(mods_folder, debug_mod_subfolder)
 
-print("Removing Mod Folder in Mods...")
-watcher_folder_remove(creator_name, mods_folder, project_name)
+def main():
+    print("Removing Debug Setup...")
+    debug_teardown(mods_folder, debug_mod_subfolder)
 
-print("Removing Build folder...")
-remove_dir(build_path)
+    print("Removing Mod Folder in Mods...")
+    watcher_folder_remove(creator_name, mods_folder, project_name)
 
-print("")
-print("Complete... All build artifacts have been removed!")
+    print("Removing Build folder...")
+    remove_dir(build_path)
+
+    print("")
+    print("Complete... All build artifacts have been removed!")
+
+
+if __name__ == "__main__":
+    main()

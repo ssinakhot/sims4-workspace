@@ -1,0 +1,9 @@
+services:
+  devcontainer:
+    container_name: sims4-workspace-devcontainer
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../:/workspace
+    command: sleep infinity
