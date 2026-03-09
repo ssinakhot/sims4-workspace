@@ -41,7 +41,7 @@ game_folder = GAME_DEVCONTAINER_DEFAULT
 num_threads = 10
 
 # The number of seconds each decompiler will have on each file before being deemed a failure
-decompiler_timeout = 180.0
+decompiler_timeout = 30.0
 
 # Instead of compiling everything, should project structure be observed to make sure the code will work the same way as in devmode?
 devmode_parity = True

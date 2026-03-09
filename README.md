@@ -165,6 +165,23 @@ This project requires **Python 3.7** (the version embedded in The Sims 4 engine)
 
 If you use VS Code with the Dev Containers extension, simply open the project and select **Reopen in Container**. The container installs Python 3.7, pip, and all dependencies automatically.
 
+**Important:** Before opening the container, you must update the mount paths in `.devcontainer/devcontainer.json` to match your system. The `mounts` section contains commented-out examples for macOS, Windows, and WSL — uncomment the pair that matches your setup and adjust the paths to point to your Sims 4 installation and Documents folder:
+
+```jsonc
+"mounts": [
+    // Game files (decompilation source)
+    "source=<path to The Sims 4>,target=${containerWorkspaceFolder}/decompile/game/,type=bind",
+    // Mods folder (compilation target)
+    "source=<path to Documents/Electronic Arts/The Sims 4>,target=${containerWorkspaceFolder}/Documents/Electronic Arts/The Sims 4,type=bind"
+]
+```
+
+Common game install locations:
+- **Windows:** `C:/Program Files/EA Games/The Sims 4`
+- **Windows (Steam):** `C:/Program Files (x86)/Steam/steamapps/common/The Sims 4`
+- **WSL:** `/mnt/c/Program Files/EA Games/The Sims 4`
+- **macOS:** `/Applications/EA Games/The Sims 4.app/Contents`
+
 ### Manual Setup (without Dev Container)
 
 1. Install [Python 3.7](https://www.python.org/downloads/release/python-3717/). On Linux you can use the [deadsnakes PPA](https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa):
