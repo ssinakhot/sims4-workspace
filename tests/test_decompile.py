@@ -81,10 +81,12 @@ class TestInitProcess:
 
         stats = Value(Stats, 0, 0, 0, 0)
         total = Value(TotalStats, 0, 0, 0, 0)
+        failed_files = []
 
-        init_process(stats, total)
+        init_process(stats, total, failed_files)
         assert process_module.stats is stats
         assert process_module.total_stats is total
+        assert process_module.failed_files is failed_files
 
 
 class TestStdoutDecompile:
@@ -110,6 +112,16 @@ class TestStdoutDecompile:
             "python3", ["-c", "import sys; sys.exit(1)"], dest
         )
         assert not success
+
+    def test_does_not_write_on_failure(self, tmp_path):
+        from util.decompile import stdout_decompile
+
+        dest = str(tmp_path / "output.py")
+        success, result = stdout_decompile(
+            "python3", ["-c", "print('bad output'); import sys; sys.exit(1)"], dest
+        )
+        assert not success
+        assert not os.path.isfile(dest)
 
 
 class TestDecompilePrintTotals:
