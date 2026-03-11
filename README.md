@@ -99,9 +99,40 @@ Tools for parsing and extracting data from Sims 4 `.package` files (DBPF v2.0 fo
 # Show package info (resource types, entry counts)
 python datamine.py info path/to/file.package
 
-# Extract tuning XML from a package
+# Extract tuning XML from a single package
 python datamine.py extract path/to/file.package -o output_dir/
+
+# Extract resources from all game packages
+python datamine.py extract-all /path/to/game -o output_dir/
 ```
+
+#### extract-all
+
+Bulk-extracts resources from all game packages with smart processing for known types and raw `.bin` fallback for everything else.
+
+```sh
+# Default: tuning XML, string tables, and images
+python datamine.py extract-all /path/to/game -o output/
+
+# Extract everything (smart processing for known types, raw .bin for others)
+python datamine.py extract-all /path/to/game -o output/ --types all
+
+# Extract specific types by label or hex ID
+python datamine.py extract-all /path/to/game -o output/ --types STBL PNG
+python datamine.py extract-all /path/to/game -o output/ --types 0x034AEECB
+```
+
+**Smart processing** is applied to known resource types:
+
+| Type | Output |
+|------|--------|
+| CombinedTuning | Individual `.xml` files per tuning entry, organized by class (e.g., `xml/Skill/`, `xml/Career/`) |
+| String Table (STBL) | Merged `strings.json` with hex hash keys |
+| DDS/DST images | Converted to `.png` |
+| PNG images | Passed through as `.png` |
+| Unknown types | Raw `.bin` files organized by type ID |
+
+**Supported `--types` labels:** `tuning`, `combinedtuning`, `stbl`, `dds`, `dst`, `png`, `simdata`, `data`, `objd`, `casp`, `cobj`, `jazz`, `clip`, `geom`, `modl`, `rig`. You can also pass hex IDs like `0x034AEECB`. See [RESOURCE_TYPES.md](RESOURCE_TYPES.md) for the full list of known resource types.
 
 ### fix_tuning_names.py
 
@@ -148,7 +179,7 @@ pytest -v  # verbose output
 ├── build/             # Compiled output (generated)
 ├── assets/            # .package files to include with the mod
 ├── util/              # Core library modules
-├── datamining/        # .package file parser and tuning XML extractor
+│   └── datamining/    # .package file parser, tuning splitter, image decoder
 ├── game_mods/         # In-game mod scripts (loaded by Sims 4 engine)
 ├── tests/             # Test suite
 ├── decompile/         # Decompilation input/output

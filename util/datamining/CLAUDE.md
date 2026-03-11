@@ -7,12 +7,14 @@ General-purpose library for reading The Sims 4 `.package` files (DBPF v2.0).
 | Module | Purpose |
 |--------|---------|
 | `package_reader.py` | DBPF v2.0 container reader — parses 96-byte header, resource index, extracts resources |
+| `package_discovery.py` | Game folder scanner — discovers simulation, client, string, and all packages with full-before-delta ordering |
 | `combined_tuning.py` | CombinedTuning XML parser with `<g>` shared reference table resolution |
 | `binary_tuning.py` | Binary DATA format decoder — converts compiled CombinedTuning to XML string |
+| `tuning_splitter.py` | Splits CombinedTuning into standalone XML entries with all `<r>` references inlined |
 | `string_table.py` | STBL binary format parser for localized strings |
 | `image_decoder.py` | DST5/DST3/DST1 (DDS variant) → PNG image decoder |
 | `refpack.py` | EA RefPack/QFS decompression (used for large compressed resources) |
-| `resource_types.py` | Resource type ID constants (e.g., `0x62E94D38` = CombinedTuning) |
+| `resource_types.py` | Resource type ID constants, human-readable labels, and `--types` CLI label resolution |
 | `tuning_parser.py` | Single-file tuning XML parser (for individual tuning resources, not CombinedTuning) |
 
 ## Key Concepts
@@ -123,6 +125,31 @@ Icons referenced in tuning are resource keys in `type:group:instance` format (e.
 | `0x00B2D882` | PNG | Standard PNG image |
 
 Icons are in `Client*Build*.package` files (both full and delta builds). `image_decoder.py` handles DDS-to-PNG conversion.
+
+### Package Discovery
+
+`package_discovery.py` provides functions to find game packages organized by category:
+
+- `discover_simulation_packages(game_folder)` → `List[Tuple[str, str]]` — Simulation packages (full + delta), ordered full-before-delta for deduplication. Returns `(absolute_path, relative_path)` tuples.
+- `discover_string_packages(game_folder)` → `List[str]` — All `Strings_ENG_US.package` files.
+- `discover_client_packages(game_folder)` → `List[Tuple[str, str]]` — Client packages (full + delta), ordered full-before-delta.
+- `discover_all_packages(game_folder)` → `List[Tuple[str, str]]` — Every `.package` file in the game folder tree.
+
+### Tuning Splitter
+
+`tuning_splitter.py` splits a CombinedTuning resource into standalone XML entries:
+
+- `split_combined_tuning(data: bytes) -> List[SplitEntry]` — Takes raw CombinedTuning bytes (XML or binary DATA), resolves all `<r>` references from the `<g>` shared table, and returns individual entries.
+- Each `SplitEntry` has: `cls` (tuning class), `name` (instance name), `instance_id`, `module`, `element_tag` (`"I"` or `"M"`), `xml` (standalone XML string).
+- References are deep-copied and inlined recursively, so each output entry is fully self-contained.
+
+### Resource Type Resolution
+
+`resource_types.py` provides label-based lookup for the `--types` CLI filter:
+
+- `resolve_type_filter(name)` — Accepts hex IDs (`"0x2F7D0004"`) or labels (`"DDS"`, `"STBL"`, `"CombinedTuning"`). Case-insensitive, strips underscores/hyphens/spaces.
+- `RESOURCE_TYPE_BY_LABEL` — Maps 16 common labels to type IDs (tuning, combinedtuning, stbl, dds, dst, png, simdata, data, objd, casp, cobj, jazz, clip, geom, modl, rig).
+- `RESOURCE_TYPE_LABELS` — Maps 47 known type IDs to human-readable names for display.
 
 ## Python 3.7 Compatibility
 
