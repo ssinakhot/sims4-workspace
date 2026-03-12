@@ -11,6 +11,10 @@ from util.datamining.package_reader import (
     DBPF_HEADER_SIZE,
     TUNING_TYPE_ID,
 )
+from util.datamining.resource_types import (
+    COMBINED_TUNING_TYPE_ID,
+    STRING_TABLE_TYPE_ID,
+)
 from util.datamining.tuning_parser import TuningParser, TuningFile
 
 
@@ -139,6 +143,98 @@ class TestPackageReader:
 
         result = reader.extract_resource(reader.entries[0])
         assert result == raw_data
+
+    def test_extract_resource_zlib_compressed(self, tmp_path):
+        original_data = b"hello world uncompressed resource data" * 10
+        compressed_data = zlib.compress(original_data)
+
+        # Build the package manually with a compressed entry
+        data_offset = DBPF_HEADER_SIZE
+        index_offset = data_offset + len(compressed_data)
+
+        # Index: 4-byte flags + 32-byte entry
+        index_flags = 0
+        index_data = struct.pack("<I", index_flags)
+        instance = 100
+        instance_hi = (instance >> 32) & 0xFFFFFFFF
+        instance_lo = instance & 0xFFFFFFFF
+        # compressed field = 1 (non-zero -> compressed), file_size = compressed, mem_size = original
+        index_data += struct.pack("<IIIIIIIBB",
+                                 0x00000001, 0, instance_hi, instance_lo,
+                                 data_offset, len(compressed_data), len(original_data),
+                                 1, 0)
+        index_data += b'\x00\x00'
+        index_size = len(index_data)
+
+        header = bytearray(DBPF_HEADER_SIZE)
+        header[0:4] = DBPF_MAGIC
+        struct.pack_into("<I", header, 4, 2)
+        struct.pack_into("<I", header, 8, 1)
+        struct.pack_into("<I", header, 36, 1)         # 1 entry
+        struct.pack_into("<I", header, 60, index_size)
+        struct.pack_into("<I", header, 64, index_offset)
+
+        pkg_data = bytes(header) + compressed_data + index_data
+        pkg_file = tmp_path / "compressed.package"
+        pkg_file.write_bytes(pkg_data)
+
+        reader = PackageReader(str(pkg_file))
+        reader.read()
+
+        assert reader.entries[0].is_compressed
+        result = reader.extract_resource(reader.entries[0])
+        assert result == original_data
+
+    def test_extract_combined_tuning_entries(self, tmp_path):
+        combined_data = b'<combined><R><I c="Buff" i="buff" n="buff_Test" s="1"></I></R></combined>'
+        other_data = b"other stuff"
+
+        pkg_data = build_test_package([
+            (COMBINED_TUNING_TYPE_ID, 0, 500, combined_data),
+            (0x00000001, 0, 600, other_data),
+            (COMBINED_TUNING_TYPE_ID, 0, 700, combined_data),
+        ])
+        pkg_file = tmp_path / "combined.package"
+        pkg_file.write_bytes(pkg_data)
+
+        reader = PackageReader(str(pkg_file))
+        reader.read()
+
+        entries = reader.extract_combined_tuning_entries()
+        assert len(entries) == 2
+        assert all(e.key.type_id == COMBINED_TUNING_TYPE_ID for e in entries)
+        assert entries[0].key.instance == 500
+        assert entries[1].key.instance == 700
+
+    def test_extract_string_table_entries(self, tmp_path):
+        stbl_data = b"STBL\x05\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
+        pkg_data = build_test_package([
+            (STRING_TABLE_TYPE_ID, 0x00000000, 100, stbl_data),  # English
+            (STRING_TABLE_TYPE_ID, 0x00000002, 200, stbl_data),  # Other locale
+            (STRING_TABLE_TYPE_ID, 0x00000000, 300, stbl_data),  # English
+            (0x00000001, 0, 400, b"not a string table"),
+        ])
+        pkg_file = tmp_path / "strings.package"
+        pkg_file.write_bytes(pkg_data)
+
+        reader = PackageReader(str(pkg_file))
+        reader.read()
+
+        # Default: English locale (group 0x00000000)
+        english_entries = reader.extract_string_table_entries()
+        assert len(english_entries) == 2
+        assert all(e.key.type_id == STRING_TABLE_TYPE_ID for e in english_entries)
+        assert all(e.key.group == 0x00000000 for e in english_entries)
+
+        # Specific locale
+        other_entries = reader.extract_string_table_entries(locale_group=0x00000002)
+        assert len(other_entries) == 1
+        assert other_entries[0].key.instance == 200
+
+        # All locales (None)
+        all_entries = reader.extract_string_table_entries(locale_group=None)
+        assert len(all_entries) == 3
 
     def test_extract_tuning_xml(self, tmp_path):
         xml_bytes = b'<I s="1" i="buff" n="buff_Test"></I>'

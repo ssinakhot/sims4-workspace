@@ -82,6 +82,24 @@ Mods are always named `{creator_name}_{project_name}` where `project_name` defau
 
 Tests live in `tests/` and use pytest. Run with `pytest` or `pytest -v` from the project root. The `conftest.py` provides a `mock_settings` fixture that creates temporary directories, so tests don't need a real `settings.py`.
 
+### TDD — Red-Green-Refactor
+
+All new code must follow test-driven development:
+
+1. **Red** — Write a failing test first that describes the desired behavior.
+2. **Green** — Write the minimum code to make the test pass.
+3. **Refactor** — Clean up the code while keeping tests green.
+
+Tests must pass (`pytest`) before any code is considered complete.
+
+### Code Review
+
+**All changes must be reviewed before pushing.** After completing work:
+
+1. Run `pytest` — all tests must pass.
+2. Review the diff (`git diff`) for correctness, style, and unintended changes.
+3. Only push after confirming the changes are correct.
+
 ## Licensing
 
 Files originating from the upstream project (by June Hanabi / junebug12851) carry an Apache 2.0 license header — retain those headers on any file that contains or derives from that code. New files written for this fork do not need the Apache header.
