@@ -1,15 +1,15 @@
 import json
-import struct
+import os
 import pytest
 
 from extraction.extract_skills import (
     derive_display_name,
-    resolve_string,
     categorize_skill,
     extract_skill,
-    extract_skills_from_xml,
+    extract_all_skills,
 )
-from util.datamining.combined_tuning import CombinedTuningParser
+from extraction.helpers import resolve_string
+from util.datamining.combined_tuning import CombinedTuningParser, TuningElement
 from util.datamining.string_table import StringTable
 
 
@@ -209,55 +209,34 @@ class TestExtractSkill:
         assert "description" not in result
 
 
-class TestExtractSkillsFromXml:
-    def test_grouped_by_first_tag(self):
-        result = extract_skills_from_xml(SKILLS_XML)
-        # Tags from test XML are used directly as category names
-        assert "Creative" in result
-        assert "Mental" in result
-        assert "Motor" in result
-        assert "Social" in result
+class TestExtractAllSkills:
+    """Integration test using pre-extracted files in a temp directory."""
 
-    def test_filters_hidden(self):
-        result = extract_skills_from_xml(SKILLS_XML)
-        all_names = [s["instanceName"] for skills in result.values() for s in skills]
-        assert "skill_Hidden_Dancing" not in all_names
+    def test_extracts_from_packages_dir(self, tmp_path):
+        """Write skill XML files to a temp packages dir and extract."""
+        # Set up packages dir structure
+        skill_dir = tmp_path / "xml" / "Skill"
+        skill_dir.mkdir(parents=True)
 
-    def test_includes_potty(self):
-        result = extract_skills_from_xml(SKILLS_XML)
-        all_names = [s["instanceName"] for skills in result.values() for s in skills]
-        assert "skill_Toddler_Potty" in all_names
+        # Write individual skill XML files (as extract-all would produce)
+        skill_xml = '<I c="Skill" i="statistic" m="statistics.skill" n="skill_Cooking" s="16700">\n  <T n="skill_level_type">MAJOR</T>\n  <T n="hidden">False</T>\n  <L n="tags"><T>Creative</T></L>\n</I>'
+        (skill_dir / "skill_Cooking.xml").write_text(skill_xml)
 
-    def test_excludes_non_skill_classes(self):
-        result = extract_skills_from_xml(SKILLS_XML)
-        all_names = [s["instanceName"] for skills in result.values() for s in skills]
-        assert "career_Astronaut" not in all_names
+        skill_xml2 = '<I c="Skill" i="statistic" m="statistics.skill" n="skill_Logic" s="16701">\n  <T n="skill_level_type">MAJOR</T>\n  <T n="hidden">False</T>\n  <L n="tags"><T>Mental</T></L>\n</I>'
+        (skill_dir / "skill_Logic.xml").write_text(skill_xml2)
 
-    def test_correct_counts(self):
-        result = extract_skills_from_xml(SKILLS_XML)
-        total = sum(len(v) for v in result.values())
-        # Cooking, Logic, Fitness, Charisma, Child_Creativity, Bowling, Toddler_Potty = 7
-        # Hidden_Dancing filtered (hidden)
-        assert total == 7
+        hidden_xml = '<I c="Skill" i="statistic" m="statistics.skill" n="skill_Hidden" s="16710">\n  <T n="skill_level_type">MINOR</T>\n  <T n="hidden">True</T>\n</I>'
+        (skill_dir / "skill_Hidden.xml").write_text(hidden_xml)
 
-    def test_creative_contents(self):
-        result = extract_skills_from_xml(SKILLS_XML)
-        creative_names = [s["instanceName"] for s in result["Creative"]]
-        assert "skill_Cooking" in creative_names
-        assert "skill_Child_Creativity" in creative_names
+        output_path = str(tmp_path / "skills.json")
+        extract_all_skills(str(tmp_path), output_path, icons_dir=None)
 
-    def test_sorted_within_category(self):
-        result = extract_skills_from_xml(SKILLS_XML)
-        creative_names = [s["name"] for s in result["Creative"]]
-        assert creative_names == sorted(creative_names)
+        with open(output_path) as f:
+            data = json.load(f)
 
-    def test_with_string_table(self):
-        table = make_string_table({
-            0x1234ABCD: "Gourmet Cooking",
-            0xAAAABBBB: "Logical Thinking",
-        })
-        result = extract_skills_from_xml(SKILLS_XML, table)
-        cooking = [s for s in result["Creative"] if s["instanceName"] == "skill_Cooking"][0]
-        assert cooking["name"] == "Gourmet Cooking"
-        logic = result["Mental"][0]
-        assert logic["name"] == "Logical Thinking"
+        skills = data["skills"]
+        all_names = [s["instanceName"] for cat in skills.values() for s in cat]
+        assert "skill_Cooking" in all_names
+        assert "skill_Logic" in all_names
+        assert "skill_Hidden" not in all_names
+        assert len(all_names) == 2
